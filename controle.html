@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+
+<h1>Painel de Controle</h1>
+
+<h2>TV1</h2>
+
+<button onclick="mudar('tv1','tela1.html')">Tela 1</button>
+<button onclick="mudar('tv1','tela2.html')">Tela 2</button>
+<button onclick="mudar('tv1','tela3.html')">Tela 3</button>
+<button onclick="mudar('tv1','tela4.html')">Tela 4</button>
+
+
+<button onclick="mudar('tv1','layout-2telas.html?t1=1&t2=2')">1 + 2</button>
+<button onclick="mudar('tv1','layout-2telas.html?t1=3&t2=4')">3 + 4</button>
+<button onclick="mudar('tv1','layout-2telas.html?t1=2&t2=1')">2 + 1</button>
+
+
+<h2>TV2</h2>
+
+<button onclick="mudar('tv2','tela1.html')">Tela 1</button>
+<button onclick="mudar('tv2','tela2.html')">Tela 2</button>
+<button onclick="mudar('tv2','tela3.html')">Tela 3</button>
+<button onclick="mudar('tv2','tela4.html')">Tela 4</button>
+
+
+
+<button onclick="mudar('tv2','layout-2telas.html?t1=1&t2=2')">1 + 2</button>
+<button onclick="mudar('tv2','layout-2telas.html?t1=3&t2=4')">3 + 4</button>
+<button onclick="mudar('tv2','layout-2telas.html?t1=2&t2=1')">2 + 1</button>
+
+
+
+
+<h2>TV3</h2>
+
+<button onclick="mudar('tv3','tela1.html')">Tela 1</button>
+<button onclick="mudar('tv3','tela2.html')">Tela 2</button>
+<button onclick="mudar('tv3','tela3.html')">Tela 3</button>
+<button onclick="mudar('tv3','tela4.html')">Tela 4</button>
+
+
+
+<button onclick="mudar('tv3','layout-2telas.html?t1=1&t2=2')">1 + 2</button>
+<button onclick="mudar('tv3','layout-2telas.html?t1=3&t2=4')">3 + 4</button>
+<button onclick="mudar('tv3','layout-2telas.html?t1=2&t2=1')">2 + 1</button>
+
+
+<script>
+
+async function mudar(tv,pagina){
+
+await fetch("http://10.190.31.40/update",{
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+tv:tv,
+pagina:pagina
+})
+
+})
+
+}
+</script>
+</body>
+</html>

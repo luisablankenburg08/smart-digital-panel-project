@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+
+<style>
+
+html,body{
+margin:0;
+height:100%;
+width:100%;
+overflow:hidden;
+}
+
+iframe{
+width:100%;
+height:100%;
+border:0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<iframe id="frame"></iframe>
+
+<script>
+
+const params = new URLSearchParams(window.location.search)
+
+const tv = params.get("tv")
+
+let atual = ""
+
+async function atualizar(){
+
+ try{
+
+  let r = await fetch("/painel/state.json?t=" + Date.now())
+
+  let estado = await r.json()
+
+  if(!tv || !estado[tv]) return
+
+  let pagina = estado[tv]
+
+  let novaPagina = "/painel/layouts/" + pagina
+
+  if(atual !== novaPagina){
+
+   document.getElementById("frame").src = novaPagina
+   atual = novaPagina
+
+  }
+
+ }catch(e){
+  console.log("Erro ao atualizar tela",e)
+ }
+
+}
+
+setInterval(atualizar,2000)
+
+atualizar()
+
+</script>
+
+</body>
+
+</html>
