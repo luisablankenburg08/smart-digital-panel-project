@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 
 <head>
@@ -71,4 +71,71 @@ atualizar()
 
 </body>
 
+</html>
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+
+<body style="margin:0">
+
+<iframe id="frame" style="border:none;width:100%;height:100vh;"></iframe>
+
+<script>
+
+let tvId = localStorage.getItem("tvId");
+
+async function registrar(){
+
+  if(!tvId){
+    try{
+      let res = await fetch("/register", { method: "POST" });
+      let data = await res.json();
+
+      tvId = data.tv;
+      localStorage.setItem("tvId", tvId);
+
+      console.log("Registrado como:", tvId);
+
+    }catch(e){
+      console.error("Erro no register:", e);
+    }
+  }
+}
+
+async function carregar(){
+
+  try{
+    let res = await fetch("/state");
+    let state = await res.json();
+
+    let url = state[tvId] || "layouts/tela1.html";
+
+    if(url.includes("?")){
+      url += "&_=" + Date.now();
+    }else{
+      url += "?_=" + Date.now();
+    }
+
+    document.getElementById("frame").src = url;
+
+  }catch(e){
+    console.error("Erro ao carregar:", e);
+  }
+}
+
+async function iniciar(){
+  await registrar();
+  carregar();
+  setInterval(carregar,2000);
+}
+
+iniciar();
+
+</script>
+
+</body>
 </html>
