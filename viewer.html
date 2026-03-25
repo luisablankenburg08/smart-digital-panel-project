@@ -112,6 +112,13 @@ async function carregar(){
     let res = await fetch("/state");
     let state = await res.json();
 
+    if(!tvId || !state[tvId]){
+      console.log("TV não registrada no servidor. Registrando novamente...");
+      localStorage.removeItem("tvId");
+      await registrar();
+      return; // espera próximo ciclo
+    }
+
     let url = state[tvId] || "layouts/tela1.html";
 
     if(url.includes("?")){
@@ -126,7 +133,6 @@ async function carregar(){
     console.error("Erro ao carregar:", e);
   }
 }
-
 async function iniciar(){
   await registrar();
   carregar();
