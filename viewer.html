@@ -116,7 +116,7 @@ async function carregar(){
       console.log("TV não registrada no servidor. Registrando novamente...");
       localStorage.removeItem("tvId");
       await registrar();
-      return; // espera próximo ciclo
+      return; 
     }
 
     let url = state[tvId] || "layouts/tela1.html";
