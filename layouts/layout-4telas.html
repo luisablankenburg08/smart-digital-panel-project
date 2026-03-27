@@ -40,11 +40,28 @@ border:none;
 
 <body>
 
-<iframe class="tela1" src="tela1.html"></iframe>
-<iframe class="tela2" src="tela2.html"></iframe>
-<iframe class="tela3" src="tela3.html"></iframe>
-<iframe class="tela4" src="tela4.html"></iframe>
+<iframe id="tela1" class="tela1"></iframe>
+<iframe id="tela2" class="tela2"></iframe>
+<iframe id="tela3" class="tela3"></iframe>
+<iframe id="tela4" class="tela4"></iframe>
 
+<script>
+function getParam(name){
+  const params = new URLSearchParams(window.location.search)
+  return params.get(name)
+}
+
+const t1 = getParam("t1") || 1
+const t2 = getParam("t2") || 2
+const t3 = getParam("t3") || 3
+const t4 = getParam("t4") || 4
+
+document.getElementById("tela1").src = "tela" + t1 + ".html"
+document.getElementById("tela2").src = "tela" + t2 + ".html"
+document.getElementById("tela3").src = "tela" + t3 + ".html"
+document.getElementById("tela4").src = "tela" + t4 + ".html"
+
+</script>
 </body>
 </html>
 
