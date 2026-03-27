@@ -34,7 +34,6 @@ async function registrar(){
   }
 }
 
-// Heartbeat - Envia ping a cada 5 segundos
 async function iniciarHeartbeat(){
   if(heartbeatInterval) clearInterval(heartbeatInterval);
   
@@ -52,19 +51,16 @@ async function iniciarHeartbeat(){
   }, 5000);
 }
 
-// Desconectar quando página fecha - Usa sendBeacon que é confiável mesmo ao fechar
 function desligar(){
   if(tvId){
     console.log("🔌 Enviando desconexão para:", tvId);
-    // sendBeacon é síncrono e confiável para enviar dados quando página fecha
-    // Envia como FormData (application/x-www-form-urlencoded)
     const params = new URLSearchParams();
     params.append('tv', tvId);
     navigator.sendBeacon("/unregister", params);
   }
 }
 
-// Detectar eventos de desconexão/fechamento
+
 window.addEventListener("beforeunload", desligar);
 window.addEventListener("pagehide", desligar);
 window.addEventListener("unload", desligar);
@@ -79,7 +75,7 @@ async function carregar(){
       console.log("TV não registrada no servidor. Registrando novamente...");
       localStorage.removeItem("tvId");
       await registrar();
-      return; // espera próximo ciclo
+      return; 
     }
 
     let url = state[tvId] || "layouts/tela1.html";
