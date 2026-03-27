@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Painel</title>
+
+<style>
+.tv{
+  border:1px solid #ccc;
+  margin:10px;
+  padding:10px;
+}
+button{
+  margin:5px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Painel de Controle</h1>
+
+<div id="tvs"></div>
+
+<script>
+
+async function carregar(){
+
+  let res = await fetch("/state");
+  let state = await res.json();
+
+  let container = document.getElementById("tvs");
+  container.innerHTML = "";
+
+  for(let tv in state){
+
+    let div = document.createElement("div");
+    div.className = "tv";
+
+    let titulo = document.createElement("h2");
+    titulo.innerText = tv;
+
+    div.appendChild(titulo);
+
+    for(let i=1;i<=4;i++){
+      let btn = document.createElement("button");
+      btn.innerText = "Tela " + i;
+      btn.onclick = () => mudar(tv, "layouts/tela"+i+".html");
+      div.appendChild(btn);
+    }
+
+    container.appendChild(div);
+  }
+}
+async function mudar(tv,pagina){
+
+  await fetch("/update", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ tv, pagina })
+  });
+
+}
+
+setInterval(carregar,2000);
+carregar();
+
+</script>
+
+</body>
+</html>

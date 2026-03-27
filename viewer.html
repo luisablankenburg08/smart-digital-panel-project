@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+
+<body style="margin:0">
+
+<iframe id="frame" style="border:none;width:100%;height:100vh;"></iframe>
+
+<script>
+
+let tvId = localStorage.getItem("tvId");
+let heartbeatInterval;
+
+async function registrar(){
+
+  if(!tvId){
+    try{
+      let res = await fetch("/register", { method: "POST" });
+      let data = await res.json();
+
+      tvId = data.tv;
+      localStorage.setItem("tvId", tvId);
+
+      console.log("Registrado como:", tvId);
+      iniciarHeartbeat();
+
+    }catch(e){
+      console.error("Erro no register:", e);
+    }
+  }else{
+    iniciarHeartbeat();
+  }
+}
+
+// Heartbeat - Envia ping a cada 5 segundos
+async function iniciarHeartbeat(){
+  if(heartbeatInterval) clearInterval(heartbeatInterval);
+  
+  heartbeatInterval = setInterval(async () => {
+    try{
+      await fetch("/ping", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ tv: tvId }),
+        keepalive: true
+      });
+    }catch(e){
+      console.error("Erro ao enviar heartbeat:", e);
+    }
+  }, 5000);
+}
+
+// Desconectar quando página fecha - Usa sendBeacon que é confiável mesmo ao fechar
+function desligar(){
+  if(tvId){
+    console.log("🔌 Enviando desconexão para:", tvId);
+    // sendBeacon é síncrono e confiável para enviar dados quando página fecha
+    // Envia como FormData (application/x-www-form-urlencoded)
+    const params = new URLSearchParams();
+    params.append('tv', tvId);
+    navigator.sendBeacon("/unregister", params);
+  }
+}
+
+// Detectar eventos de desconexão/fechamento
+window.addEventListener("beforeunload", desligar);
+window.addEventListener("pagehide", desligar);
+window.addEventListener("unload", desligar);
+
+async function carregar(){
+
+  try{
+    let res = await fetch("/state");
+    let state = await res.json();
+
+    if(!tvId || !state[tvId]){
+      console.log("TV não registrada no servidor. Registrando novamente...");
+      localStorage.removeItem("tvId");
+      await registrar();
+      return; // espera próximo ciclo
+    }
+
+    let url = state[tvId] || "layouts/tela1.html";
+
+    if(url.includes("?")){
+      url += "&_=" + Date.now();
+    }else{
+      url += "?_=" + Date.now();
+    }
+
+    document.getElementById("frame").src = url;
+
+  }catch(e){
+    console.error("Erro ao carregar:", e);
+  }
+}
+
+async function iniciar(){
+  await registrar();
+  carregar();
+  setInterval(carregar,2000);
+}
+
+iniciar();
+
+</script>
+
+</body>
+</html>
+

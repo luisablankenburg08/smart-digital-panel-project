@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<style>
+
+body{
+margin:0;
+height:100vh;
+
+display:grid;
+
+/* duas colunas */
+grid-template-columns: 1fr 1fr;
+
+/* duas linhas iguais */
+grid-template-rows: 1fr 1fr;
+
+/* definição do layout */
+grid-template-areas:
+"tela1 tela3"
+"tela2 tela4";
+}
+
+iframe{
+width:100%;
+height:100%;
+border:none;
+}
+
+/* posições */
+
+.tela1 { grid-area: tela1; }
+.tela2 { grid-area: tela2; }
+.tela3 { grid-area: tela3; }
+.tela4 { grid-area: tela4; }
+</style>
+</head>
+
+<body>
+
+<iframe class="tela1" src="tela1.html"></iframe>
+<iframe class="tela2" src="tela2.html"></iframe>
+<iframe class="tela3" src="tela3.html"></iframe>
+<iframe class="tela4" src="tela4.html"></iframe>
+
+</body>
+</html>
+
