@@ -1,41 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
 <title>Painel</title>
+<link rel="stylesheet" href="style.css">
 
-<style>
-.tv{
-  border:1px solid #ccc;
-  margin:10px;
-  padding:10px;
-}
-button{
-  margin:5px;
-}
-.details-block{
-  margin:8px 0;
-  padding:8px;
-  border:1px solid #ddd;
-  background:#fafafa;
-}
-.details-block summary{
-  font-weight:bold;
-  cursor:pointer;
-}
-.control-row{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-  margin:4px 0;
-}
-</style>
 </head>
 
 <body>
 
-<h1>Painel de Controle</h1>
+<h1 style="text-align: center; color: #1c9230">Painel de Controle</h1>
 
 <div id="tvs"></div>
 
@@ -52,20 +27,30 @@ async function carregar(){
 
   // preserva o estado aberto dos detalhes enquanto faz refresh
   let openState = {};
+  // Carrega estados salvos do localStorage
+  let savedStates = JSON.parse(localStorage.getItem('tvDetailsStates') || '{}');
   container.querySelectorAll(".tv").forEach(tvDiv => {
     let tvName = tvDiv.querySelector("h2")?.innerText;
     if(!tvName) return;
     tvDiv.querySelectorAll("details.details-block").forEach(d=>{
       let legend = d.querySelector("summary")?.innerText;
-      if(legend) openState[tvName + "|" + legend] = d.open;
+      if(legend) {
+        let key = tvName + "|" + legend;
+        openState[key] = d.open;
+        // Atualiza savedStates com estado atual
+        savedStates[key] = d.open;
+      }
     });
   });
+  // Salva no localStorage
+  localStorage.setItem('tvDetailsStates', JSON.stringify(savedStates));
 
   container.innerHTML = "";
 
   function makeSelect(id){
     let select = document.createElement("select");
     select.id = id;
+    select.className = "tela-select";
     for(let i=1;i<=4;i++){
       let opt = document.createElement("option");
       opt.value = i;
@@ -116,16 +101,48 @@ async function carregar(){
       return { type:0, screens:[] };
     };
 
+    const createPreview = (type, screens) => {
+      let preview = document.createElement('div');
+      preview.className = 'layout-preview ' + (type===1 ? 'one': type===2 ? 'two': type===3 ? 'three' : 'four');
+      updatePreview(preview, type, screens);
+      return preview;
+    };
+
+    const updatePreview = (preview, type, screens) => {
+      preview.innerHTML = '';
+      preview.className = 'layout-preview ' + (type===1 ? 'one': type===2 ? 'two': type===3 ? 'three' : 'four');
+      for(let i=0;i<screens.length;i++){
+        let cell = document.createElement('div');
+        cell.className = 'preview-screen';
+        cell.innerText = 'tela ' + screens[i];
+        preview.appendChild(cell);
+      }
+      if(screens.length===0){
+        let cell = document.createElement('div');
+        cell.className = 'preview-screen';
+        cell.innerText = 'Selecione as telas para ver a prévia';
+        preview.appendChild(cell);
+      }
+    };
+
     const addBlock = (legend, rows)=>{
       let d = document.createElement("details");
       d.className = "details-block";
       let s = document.createElement("summary");
+      s.className = "titulo-exibir";
       s.innerText = legend;
       d.appendChild(s);
       rows.forEach(r=>d.appendChild(r));
-      // restaura estado de aberto/fechado após refresh
+      // restaura estado de aberto/fechado do localStorage
+      let savedStates = JSON.parse(localStorage.getItem('tvDetailsStates') || '{}');
       let oldKey = tv + "|" + legend;
-      if(openState[oldKey]) d.open = true;
+      if(savedStates[oldKey]) d.open = true;
+      // Salva estado quando toggle
+      d.addEventListener('toggle', () => {
+        let states = JSON.parse(localStorage.getItem('tvDetailsStates') || '{}');
+        states[oldKey] = d.open;
+        localStorage.setItem('tvDetailsStates', JSON.stringify(states));
+      });
       div.appendChild(d);
       return d;
     };
@@ -135,7 +152,10 @@ async function carregar(){
     row1.className = "control-row";
     let select1 = makeSelect(tv+"-1");
     let btn1 = document.createElement("button");
+    btn1.className = "aplicar-btn";
     btn1.innerText = "Aplicar";
+    let preview1 = createPreview(1, [select1.value]);
+    select1.addEventListener('change', ()=> updatePreview(preview1, 1, [select1.value]));
     btn1.onclick = async () => {
       let url = "layouts/tela" + select1.value + ".html";
       await mudar(tv, url);
@@ -145,7 +165,16 @@ async function carregar(){
     };
     row1.appendChild(select1);
     row1.appendChild(btn1);
-    let block1 = addBlock("Exibir 1 tela", [row1]);
+
+    let previewWrapper1 = document.createElement('div');
+    previewWrapper1.className = 'preview-wrapper';
+    let previewTitle1 = document.createElement('div');
+    previewTitle1.className = 'preview-title';
+    previewTitle1.innerText = 'Prévia';
+    previewWrapper1.appendChild(previewTitle1);
+    previewWrapper1.appendChild(preview1);
+
+    let block1 = addBlock("Exibir 1 tela (fullscreen)", [row1, previewWrapper1]);
 
     // Exibir 2 telas
     let row2 = document.createElement("div");
@@ -153,9 +182,14 @@ async function carregar(){
     let select2a = makeSelect(tv+"-2a");
     let select2b = makeSelect(tv+"-2b");
     let btn2 = document.createElement("button");
+    btn2.className = "aplicar-btn";
     btn2.innerText = "Aplicar";
+    let preview2 = createPreview(2, [select2a.value, select2b.value]);
+    const refresh2 = () => updatePreview(preview2, 2, [select2a.value, select2b.value]);
+    select2a.addEventListener('change', refresh2);
+    select2b.addEventListener('change', refresh2);
     btn2.onclick = async () => {
-      if(select2a.value === select2b.value){ alert('Escolha duas telas diferentes.'); return; }
+      //if(select2a.value === select2b.value){ alert('Escolha duas telas diferentes.'); return; }
       let url = "layouts/layout-2telas.html?t1=" + select2a.value + "&t2=" + select2b.value;
       await mudar(tv, url);
       delete pendingSelections[select2a.id];
@@ -167,7 +201,16 @@ async function carregar(){
     row2.appendChild(select2a);
     row2.appendChild(select2b);
     row2.appendChild(btn2);
-    let block2 = addBlock("Exibir 2 telas", [row2]);
+
+    let previewWrapper2 = document.createElement('div');
+    previewWrapper2.className = 'preview-wrapper';
+    let previewTitle2 = document.createElement('div');
+    previewTitle2.className = 'preview-title';
+    previewTitle2.innerText = 'Prévia';
+    previewWrapper2.appendChild(previewTitle2);
+    previewWrapper2.appendChild(preview2);
+
+    let block2 = addBlock("Exibir 2 telas (50% | 50%)", [row2, previewWrapper2]);
 
     // Exibir 3 telas
     let row3 = document.createElement("div");
@@ -176,11 +219,17 @@ async function carregar(){
     let select3b = makeSelect(tv+"-3b");
     let select3c = makeSelect(tv+"-3c");
     let btn3 = document.createElement("button");
+    btn3.className = "aplicar-btn";
     btn3.innerText = "Aplicar";
+    let preview3 = createPreview(3, [select3a.value, select3b.value, select3c.value]);
+    const refresh3 = () => updatePreview(preview3, 3, [select3a.value, select3b.value, select3c.value]);
+    select3a.addEventListener('change', refresh3);
+    select3b.addEventListener('change', refresh3);
+    select3c.addEventListener('change', refresh3);
     btn3.onclick = async () => {
       let arr = [select3a.value, select3b.value, select3c.value];
       let u = new Set(arr);
-      if(u.size < 3){ alert('Escolha três telas diferentes.'); return; }
+      //if(u.size < 3){ alert('Escolha três telas diferentes.'); return; }
       let url = "layouts/layout-3telas.html?t1=" + select3a.value + "&t2=" + select3b.value + "&t3=" + select3c.value;
       await mudar(tv, url);
       delete pendingSelections[select3a.id];
@@ -195,7 +244,16 @@ async function carregar(){
     row3.appendChild(select3b);
     row3.appendChild(select3c);
     row3.appendChild(btn3);
-    let block3 = addBlock("Exibir 3 telas", [row3]);
+
+    let previewWrapper3 = document.createElement('div');
+    previewWrapper3.className = 'preview-wrapper';
+    let previewTitle3 = document.createElement('div');
+    previewTitle3.className = 'preview-title';
+    previewTitle3.innerText = 'Prévia';
+    previewWrapper3.appendChild(previewTitle3);
+    previewWrapper3.appendChild(preview3);
+
+    let block3 = addBlock("Exibir 3 telas (25% | 25% | 50% )", [row3, previewWrapper3]);
 
     // Exibir 4 telas
     let row4 = document.createElement("div");
@@ -205,11 +263,18 @@ async function carregar(){
     let select4c = makeSelect(tv+"-4c");
     let select4d = makeSelect(tv+"-4d");
     let btn4 = document.createElement("button");
+    btn4.className = "aplicar-btn";
     btn4.innerText = "Aplicar";
+    let preview4 = createPreview(4, [select4a.value, select4b.value, select4c.value, select4d.value]);
+    const refresh4 = () => updatePreview(preview4, 4, [select4a.value, select4b.value, select4c.value, select4d.value]);
+    select4a.addEventListener('change', refresh4);
+    select4b.addEventListener('change', refresh4);
+    select4c.addEventListener('change', refresh4);
+    select4d.addEventListener('change', refresh4);
     btn4.onclick = async () => {
       let arr = [select4a.value, select4b.value, select4c.value, select4d.value];
       let u = new Set(arr);
-      if(u.size < 4){ alert('Escolha quatro telas diferentes.'); return; }
+      //if(u.size < 4){ alert('Escolha quatro telas diferentes.'); return; }
       let url = "layouts/layout-4telas.html?t1=" + select4a.value + "&t2=" + select4b.value + "&t3=" + select4c.value + "&t4=" + select4d.value;
       await mudar(tv, url);
       delete pendingSelections[select4a.id];
@@ -227,7 +292,16 @@ async function carregar(){
     row4.appendChild(select4c);
     row4.appendChild(select4d);
     row4.appendChild(btn4);
-    let block4 = addBlock("Exibir 4 telas", [row4]);
+
+    let previewWrapper4 = document.createElement('div');
+    previewWrapper4.className = 'preview-wrapper';
+    let previewTitle4 = document.createElement('div');
+    previewTitle4.className = 'preview-title';
+    previewTitle4.innerText = 'Prévia';
+    previewWrapper4.appendChild(previewTitle4);
+    previewWrapper4.appendChild(preview4);
+
+    let block4 = addBlock("Exibir 4 telas (25% | 25% | 25% | 25%)", [row4, previewWrapper4]);
 
     // Aplica estado atual dos selects baseado no state tv
     let selected = parseLayoutState(state[tv]);
@@ -253,6 +327,11 @@ async function carregar(){
       if(!select4c.dataset.dirty) select4c.value = selected.screens[2] || 3;
       if(!select4d.dataset.dirty) select4d.value = selected.screens[3] || 4;
     }
+
+    updatePreview(preview1, 1, [select1.value]);
+    updatePreview(preview2, 2, [select2a.value, select2b.value]);
+    updatePreview(preview3, 3, [select3a.value, select3b.value, select3c.value]);
+    updatePreview(preview4, 4, [select4a.value, select4b.value, select4c.value, select4d.value]);
 
     container.appendChild(div);
   }
