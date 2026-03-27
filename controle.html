@@ -13,6 +13,23 @@
 button{
   margin:5px;
 }
+.details-block{
+  margin:8px 0;
+  padding:8px;
+  border:1px solid #ddd;
+  background:#fafafa;
+}
+.details-block summary{
+  font-weight:bold;
+  cursor:pointer;
+}
+.control-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:4px 0;
+}
 </style>
 </head>
 
@@ -24,13 +41,49 @@ button{
 
 <script>
 
+let pendingSelections = {};
+
 async function carregar(){
 
   let res = await fetch("/state");
   let state = await res.json();
 
   let container = document.getElementById("tvs");
+
+  // preserva o estado aberto dos detalhes enquanto faz refresh
+  let openState = {};
+  container.querySelectorAll(".tv").forEach(tvDiv => {
+    let tvName = tvDiv.querySelector("h2")?.innerText;
+    if(!tvName) return;
+    tvDiv.querySelectorAll("details.details-block").forEach(d=>{
+      let legend = d.querySelector("summary")?.innerText;
+      if(legend) openState[tvName + "|" + legend] = d.open;
+    });
+  });
+
   container.innerHTML = "";
+
+  function makeSelect(id){
+    let select = document.createElement("select");
+    select.id = id;
+    for(let i=1;i<=4;i++){
+      let opt = document.createElement("option");
+      opt.value = i;
+      opt.text = "Tela " + i;
+      select.appendChild(opt);
+    }
+
+    if(pendingSelections[id] !== undefined){
+      select.value = pendingSelections[id];
+      select.dataset.dirty = "1";
+    }
+
+    select.addEventListener("change", ()=> {
+      select.dataset.dirty = "1";
+      pendingSelections[id] = select.value;
+    });
+    return select;
+  }
 
   for(let tv in state){
 
@@ -39,14 +92,166 @@ async function carregar(){
 
     let titulo = document.createElement("h2");
     titulo.innerText = tv;
-
     div.appendChild(titulo);
 
-    for(let i=1;i<=4;i++){
-      let btn = document.createElement("button");
-      btn.innerText = "Tela " + i;
-      btn.onclick = () => mudar(tv, "layouts/tela"+i+".html");
-      div.appendChild(btn);
+    const parseLayoutState = (pagina)=>{
+      if(!pagina) return { type:0, screens:[] };
+      if(pagina.startsWith("layouts/tela")){
+        let m = pagina.match(/tela(\d)\.html/);
+        return { type:1, screens: m ? [m[1]] : [] };
+      }
+      let parts = pagina.split("?");
+      let base = parts[0];
+      let params = new URLSearchParams(parts[1]||"");
+
+      if(base.endsWith("layout-2telas.html")){
+        return { type:2, screens:[params.get("t1"), params.get("t2")] };
+      }
+      if(base.endsWith("layout-3telas.html")){
+        return { type:3, screens:[params.get("t1"), params.get("t2"), params.get("t3")] };
+      }
+      if(base.endsWith("layout-4telas.html")){
+        return { type:4, screens:[params.get("t1"), params.get("t2"), params.get("t3"), params.get("t4")] };
+      }
+      return { type:0, screens:[] };
+    };
+
+    const addBlock = (legend, rows)=>{
+      let d = document.createElement("details");
+      d.className = "details-block";
+      let s = document.createElement("summary");
+      s.innerText = legend;
+      d.appendChild(s);
+      rows.forEach(r=>d.appendChild(r));
+      // restaura estado de aberto/fechado após refresh
+      let oldKey = tv + "|" + legend;
+      if(openState[oldKey]) d.open = true;
+      div.appendChild(d);
+      return d;
+    };
+
+    // Exibir 1 tela
+    let row1 = document.createElement("div");
+    row1.className = "control-row";
+    let select1 = makeSelect(tv+"-1");
+    let btn1 = document.createElement("button");
+    btn1.innerText = "Aplicar";
+    btn1.onclick = async () => {
+      let url = "layouts/tela" + select1.value + ".html";
+      await mudar(tv, url);
+      delete pendingSelections[select1.id];
+      select1.dataset.dirty = "";
+      await carregar();
+    };
+    row1.appendChild(select1);
+    row1.appendChild(btn1);
+    let block1 = addBlock("Exibir 1 tela", [row1]);
+
+    // Exibir 2 telas
+    let row2 = document.createElement("div");
+    row2.className = "control-row";
+    let select2a = makeSelect(tv+"-2a");
+    let select2b = makeSelect(tv+"-2b");
+    let btn2 = document.createElement("button");
+    btn2.innerText = "Aplicar";
+    btn2.onclick = async () => {
+      if(select2a.value === select2b.value){ alert('Escolha duas telas diferentes.'); return; }
+      let url = "layouts/layout-2telas.html?t1=" + select2a.value + "&t2=" + select2b.value;
+      await mudar(tv, url);
+      delete pendingSelections[select2a.id];
+      delete pendingSelections[select2b.id];
+      select2a.dataset.dirty = "";
+      select2b.dataset.dirty = "";
+      await carregar();
+    };
+    row2.appendChild(select2a);
+    row2.appendChild(select2b);
+    row2.appendChild(btn2);
+    let block2 = addBlock("Exibir 2 telas", [row2]);
+
+    // Exibir 3 telas
+    let row3 = document.createElement("div");
+    row3.className = "control-row";
+    let select3a = makeSelect(tv+"-3a");
+    let select3b = makeSelect(tv+"-3b");
+    let select3c = makeSelect(tv+"-3c");
+    let btn3 = document.createElement("button");
+    btn3.innerText = "Aplicar";
+    btn3.onclick = async () => {
+      let arr = [select3a.value, select3b.value, select3c.value];
+      let u = new Set(arr);
+      if(u.size < 3){ alert('Escolha três telas diferentes.'); return; }
+      let url = "layouts/layout-3telas.html?t1=" + select3a.value + "&t2=" + select3b.value + "&t3=" + select3c.value;
+      await mudar(tv, url);
+      delete pendingSelections[select3a.id];
+      delete pendingSelections[select3b.id];
+      delete pendingSelections[select3c.id];
+      select3a.dataset.dirty = "";
+      select3b.dataset.dirty = "";
+      select3c.dataset.dirty = "";
+      await carregar();
+    };
+    row3.appendChild(select3a);
+    row3.appendChild(select3b);
+    row3.appendChild(select3c);
+    row3.appendChild(btn3);
+    let block3 = addBlock("Exibir 3 telas", [row3]);
+
+    // Exibir 4 telas
+    let row4 = document.createElement("div");
+    row4.className = "control-row";
+    let select4a = makeSelect(tv+"-4a");
+    let select4b = makeSelect(tv+"-4b");
+    let select4c = makeSelect(tv+"-4c");
+    let select4d = makeSelect(tv+"-4d");
+    let btn4 = document.createElement("button");
+    btn4.innerText = "Aplicar";
+    btn4.onclick = async () => {
+      let arr = [select4a.value, select4b.value, select4c.value, select4d.value];
+      let u = new Set(arr);
+      if(u.size < 4){ alert('Escolha quatro telas diferentes.'); return; }
+      let url = "layouts/layout-4telas.html?t1=" + select4a.value + "&t2=" + select4b.value + "&t3=" + select4c.value + "&t4=" + select4d.value;
+      await mudar(tv, url);
+      delete pendingSelections[select4a.id];
+      delete pendingSelections[select4b.id];
+      delete pendingSelections[select4c.id];
+      delete pendingSelections[select4d.id];
+      select4a.dataset.dirty = "";
+      select4b.dataset.dirty = "";
+      select4c.dataset.dirty = "";
+      select4d.dataset.dirty = "";
+      await carregar();
+    };
+    row4.appendChild(select4a);
+    row4.appendChild(select4b);
+    row4.appendChild(select4c);
+    row4.appendChild(select4d);
+    row4.appendChild(btn4);
+    let block4 = addBlock("Exibir 4 telas", [row4]);
+
+    // Aplica estado atual dos selects baseado no state tv
+    let selected = parseLayoutState(state[tv]);
+    if(selected.type===1){
+      block1.open=true;
+      if(!select1.dataset.dirty) select1.value = selected.screens[0] || 1;
+    }
+    if(selected.type===2){
+      block2.open=true;
+      if(!select2a.dataset.dirty) select2a.value = selected.screens[0] || 1;
+      if(!select2b.dataset.dirty) select2b.value = selected.screens[1] || 2;
+    }
+    if(selected.type===3){
+      block3.open=true;
+      if(!select3a.dataset.dirty) select3a.value = selected.screens[0] || 1;
+      if(!select3b.dataset.dirty) select3b.value = selected.screens[1] || 2;
+      if(!select3c.dataset.dirty) select3c.value = selected.screens[2] || 3;
+    }
+    if(selected.type===4){
+      block4.open=true;
+      if(!select4a.dataset.dirty) select4a.value = selected.screens[0] || 1;
+      if(!select4b.dataset.dirty) select4b.value = selected.screens[1] || 2;
+      if(!select4c.dataset.dirty) select4c.value = selected.screens[2] || 3;
+      if(!select4d.dataset.dirty) select4d.value = selected.screens[3] || 4;
     }
 
     container.appendChild(div);
