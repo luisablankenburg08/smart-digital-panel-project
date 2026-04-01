@@ -3,15 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>TELA 4</title>
     <style>
+        
         body {
-            background-color: rgb(230, 173, 225); /* Você pode usar nomes, HEX ou RGB */
-        }
-    </style>
+  margin: 0;
+  background: rgb(230, 173, 225);
+  font-family: Arial, sans-serif;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  height: 100vh;
+}
+
+.video-container {
+  width: 80vw;
+  aspect-ratio: 16 / 9;
+}
+
+.video-container iframe {
+  width: 100%;
+  height: 100%;
+  border: 20px;
+}
+</style>
 </head>
 <body>
-    <h1> TELA 4</h1> 
-    <p> conteúdo</p>
+    <h1> Vídeo Institucional/página do ifsc</h1>
+   <!-- <div class="video-container">
+        <iframe 
+            width="80%" 
+            src="https://www.youtube.com/embed/qgll994LTvg?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1"
+            frameborder="20"
+            allow="autoplay; fullscreen"
+            allowfullscreen>
+        </iframe>
+    </div> -->
+
+    <iframe id="site" style="width:100%;height:100vh;border:none;"></iframe>
+
+    <script>
+    const SITE = "https://ifsc.edu.br";
+
+    window.onload = () => {
+    const proxyUrl = "http://191.36.56.76:4000/proxy?url=" + encodeURIComponent(SITE);
+    document.getElementById("site").src = proxyUrl;
+    };
+    </script>
 </body>
 </html>
