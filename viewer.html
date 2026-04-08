@@ -12,29 +12,40 @@
 
 let tvId = localStorage.getItem("tvId");
 let heartbeatInterval;
+let loop;
+
+// controle de atualização visual
+let intervaloAtual = 2000;
+let ultimoUpdate = 0;
 
 async function registrar(){
+  try{
+    let res = await fetch("/register", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ tv: tvId })
+    });
 
-  if(!tvId){
-    try{
-      let res = await fetch("/register", { method: "POST" });
-      let data = await res.json();
+    let data = await res.json();
 
-      tvId = data.tv;
-      localStorage.setItem("tvId", tvId);
+    tvId = data.tv;
+    localStorage.setItem("tvId", tvId);
 
-      console.log("Registrado como:", tvId);
-      iniciarHeartbeat();
-
-    }catch(e){
-      console.error("Erro no register:", e);
-    }
-  }else{
     iniciarHeartbeat();
+
+    // 🔥 ENVIA PRIMEIRO PING IMEDIATO
+    await fetch("/ping", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ tv: tvId })
+    });
+
+  }catch(e){
+    console.error("Erro register:", e);
   }
 }
 
-// Heartbeat - Envia ping a cada 5 segundos
+// heartbeat
 async function iniciarHeartbeat(){
   if(heartbeatInterval) clearInterval(heartbeatInterval);
   
@@ -47,24 +58,20 @@ async function iniciarHeartbeat(){
         keepalive: true
       });
     }catch(e){
-      console.error("Erro ao enviar heartbeat:", e);
+      console.error("Erro heartbeat:", e);
     }
   }, 5000);
 }
 
-// Desconectar quando página fecha - Usa sendBeacon que é confiável mesmo ao fechar
+// desconectar
 function desligar(){
   if(tvId){
-    console.log("🔌 Enviando desconexão para:", tvId);
-    // sendBeacon é síncrono e confiável para enviar dados quando página fecha
-    // Envia como FormData (application/x-www-form-urlencoded)
     const params = new URLSearchParams();
     params.append('tv', tvId);
     navigator.sendBeacon("/unregister", params);
   }
 }
 
-// Detectar eventos de desconexão/fechamento
 window.addEventListener("beforeunload", desligar);
 window.addEventListener("pagehide", desligar);
 window.addEventListener("unload", desligar);
@@ -76,21 +83,47 @@ async function carregar(){
     let state = await res.json();
 
     if(!tvId || !state[tvId]){
-      console.log("TV não registrada no servidor. Registrando novamente...");
+      console.log("TV não registrada. Registrando novamente...");
       localStorage.removeItem("tvId");
       await registrar();
-      return; // espera próximo ciclo
+      return;
     }
 
-    let url = state[tvId] || "layouts/tela1.html";
+    let config = state[tvId];
 
+    let url = typeof config === "string" ? config : config.pagina;
+    let novoIntervalo = typeof config === "string" ? 2000 : config.intervalo ?? 2000;
+
+    // 🔥 Atualiza intervalo dinamicamente
+    if(novoIntervalo !== intervaloAtual){
+      intervaloAtual = novoIntervalo;
+
+      clearInterval(loop);
+
+      // 🔥 Se intervalo = 0 → não cria loop
+      if(intervaloAtual > 0){
+        loop = setInterval(carregar, intervaloAtual);
+      }
+    }
+
+    let frame = document.getElementById("frame");
+    let fullUrl = location.origin + "/" + url;
+
+    // 🔥 Se atualização DESABILITADA → não mexe na tela
+    if(intervaloAtual === 0){
+      return;
+    }
+
+    // 🔥 Cache bust só quando realmente vai atualizar
     if(url.includes("?")){
       url += "&_=" + Date.now();
     }else{
       url += "?_=" + Date.now();
     }
 
-    document.getElementById("frame").src = url;
+    if(frame.src !== fullUrl){
+      frame.src = url;
+    }
 
   }catch(e){
     console.error("Erro ao carregar:", e);
@@ -99,8 +132,12 @@ async function carregar(){
 
 async function iniciar(){
   await registrar();
+
   carregar();
-  setInterval(carregar,2000);
+
+  if(intervaloAtual > 0){
+    loop = setInterval(carregar, intervaloAtual);
+  }
 }
 
 iniciar();

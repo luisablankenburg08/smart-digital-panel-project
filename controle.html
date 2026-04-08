@@ -20,18 +20,33 @@ let pendingSelections = {};
 
 async function carregar(){
 
-  let res = await fetch("/state");
-  let state = await res.json();
-
   let container = document.getElementById("tvs");
+
+  let state;
+  try{
+    let res = await fetch("/state");
+    state = await res.json();
+  }catch(e){
+    console.error("Erro ao buscar state:", e);
+    container.innerHTML = "<p>Erro ao carregar TVs</p>";
+    return;
+  }
+
+  // 🔥 NOVO: trata state vazio corretamente
+  if(!state || Object.keys(state).length === 0){
+    container.innerHTML = "<p>Nenhuma TV conectada</p>";
+    return;
+  }
 
   // preserva o estado aberto dos detalhes enquanto faz refresh
   let openState = {};
   // Carrega estados salvos do localStorage
   let savedStates = JSON.parse(localStorage.getItem('tvDetailsStates') || '{}');
+
   container.querySelectorAll(".tv").forEach(tvDiv => {
     let tvName = tvDiv.querySelector("h2")?.innerText;
     if(!tvName) return;
+
     tvDiv.querySelectorAll("details.details-block").forEach(d=>{
       let legend = d.querySelector("summary")?.innerText;
       if(legend) {
@@ -51,6 +66,7 @@ async function carregar(){
     let select = document.createElement("select");
     select.id = id;
     select.className = "tela-select";
+
     for(let i=1;i<=4;i++){
       let opt = document.createElement("option");
       opt.value = i;
@@ -78,6 +94,7 @@ async function carregar(){
     let titulo = document.createElement("h2");
     titulo.innerText = tv;
     div.appendChild(titulo);
+
 
     const parseLayoutState = (pagina)=>{
       if(!pagina) return { type:0, screens:[] };
@@ -150,21 +167,47 @@ async function carregar(){
     // Exibir 1 tela
     let row1 = document.createElement("div");
     row1.className = "control-row";
+
     let select1 = makeSelect(tv+"-1");
+
+    let inputIntervalo1 = document.createElement("input");
+    inputIntervalo1.type = "number";
+    inputIntervalo1.value = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+
+
     let btn1 = document.createElement("button");
     btn1.className = "aplicar-btn";
     btn1.innerText = "Aplicar";
+
+    let btnDisable1 = document.createElement("button");
+    btnDisable1.className = "aplicar-btn";
+    btnDisable1.innerText = "Desabilitar atualização";
+
+    btnDisable1.onclick = async () => {
+      let url = "layouts/tela" + select1.value + ".html";
+
+      await mudar(tv, url, 0);
+      await carregar();
+    };
+
     let preview1 = createPreview(1, [select1.value]);
+
     select1.addEventListener('change', ()=> updatePreview(preview1, 1, [select1.value]));
+
     btn1.onclick = async () => {
       let url = "layouts/tela" + select1.value + ".html";
-      await mudar(tv, url);
+
+      await mudar(tv, url,parseInt(inputIntervalo1.value)
+      );
       delete pendingSelections[select1.id];
       select1.dataset.dirty = "";
+
       await carregar();
     };
     row1.appendChild(select1);
+    row1.appendChild(inputIntervalo1);
     row1.appendChild(btn1);
+    row1.appendChild(btnDisable1);
 
     let previewWrapper1 = document.createElement('div');
     previewWrapper1.className = 'preview-wrapper';
@@ -181,9 +224,27 @@ async function carregar(){
     row2.className = "control-row";
     let select2a = makeSelect(tv+"-2a");
     let select2b = makeSelect(tv+"-2b");
+
+    let inputIntervalo2 = document.createElement("input");
+    inputIntervalo2.type = "number";
+    inputIntervalo2.value = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+
     let btn2 = document.createElement("button");
     btn2.className = "aplicar-btn";
     btn2.innerText = "Aplicar";
+
+    let btnDisable2 = document.createElement("button");
+    btnDisable2.className = "aplicar-btn";
+    btnDisable2.innerText = "Desabilitar atualização";
+
+    btnDisable2.onclick = async () => {
+      let url = "layouts/layout-2telas.html?t1=" + select2a.value + "&t2=" + select2b.value;
+
+      await mudar(tv, url, 0);
+      await carregar();
+    };
+
+
     let preview2 = createPreview(2, [select2a.value, select2b.value]);
     const refresh2 = () => updatePreview(preview2, 2, [select2a.value, select2b.value]);
     select2a.addEventListener('change', refresh2);
@@ -191,7 +252,7 @@ async function carregar(){
     btn2.onclick = async () => {
       //if(select2a.value === select2b.value){ alert('Escolha duas telas diferentes.'); return; }
       let url = "layouts/layout-2telas.html?t1=" + select2a.value + "&t2=" + select2b.value;
-      await mudar(tv, url);
+      await mudar(tv, url, parseInt(inputIntervalo2.value) );
       delete pendingSelections[select2a.id];
       delete pendingSelections[select2b.id];
       select2a.dataset.dirty = "";
@@ -200,7 +261,9 @@ async function carregar(){
     };
     row2.appendChild(select2a);
     row2.appendChild(select2b);
+    row2.appendChild(inputIntervalo2);
     row2.appendChild(btn2);
+    row2.appendChild(btnDisable2);
 
     let previewWrapper2 = document.createElement('div');
     previewWrapper2.className = 'preview-wrapper';
@@ -218,9 +281,27 @@ async function carregar(){
     let select3a = makeSelect(tv+"-3a");
     let select3b = makeSelect(tv+"-3b");
     let select3c = makeSelect(tv+"-3c");
+
+    let inputIntervalo3 = document.createElement("input");
+    inputIntervalo3.type = "number";
+    inputIntervalo3.value = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+
     let btn3 = document.createElement("button");
     btn3.className = "aplicar-btn";
     btn3.innerText = "Aplicar";
+
+    let btnDisable3 = document.createElement("button");
+    btnDisable3.className = "aplicar-btn";
+    btnDisable3.innerText = "Desabilitar atualização";
+
+    btnDisable3.onclick = async () => {
+      let url = "layouts/layout-3telas.html?t1=" + select3a.value + "&t2=" + select3b.value + "&t3=" + select3c.value;
+
+      await mudar(tv, url, 0);
+      await carregar();
+    };
+
+
     let preview3 = createPreview(3, [select3a.value, select3b.value, select3c.value]);
     const refresh3 = () => updatePreview(preview3, 3, [select3a.value, select3b.value, select3c.value]);
     select3a.addEventListener('change', refresh3);
@@ -231,7 +312,7 @@ async function carregar(){
       let u = new Set(arr);
       //if(u.size < 3){ alert('Escolha três telas diferentes.'); return; }
       let url = "layouts/layout-3telas.html?t1=" + select3a.value + "&t2=" + select3b.value + "&t3=" + select3c.value;
-      await mudar(tv, url);
+      await mudar(tv, url, parseInt(inputIntervalo3.value) );
       delete pendingSelections[select3a.id];
       delete pendingSelections[select3b.id];
       delete pendingSelections[select3c.id];
@@ -243,7 +324,9 @@ async function carregar(){
     row3.appendChild(select3a);
     row3.appendChild(select3b);
     row3.appendChild(select3c);
+    row3.appendChild(inputIntervalo3);
     row3.appendChild(btn3);
+    row3.appendChild(btnDisable3);
 
     let previewWrapper3 = document.createElement('div');
     previewWrapper3.className = 'preview-wrapper';
@@ -262,9 +345,26 @@ async function carregar(){
     let select4b = makeSelect(tv+"-4b");
     let select4c = makeSelect(tv+"-4c");
     let select4d = makeSelect(tv+"-4d");
+
+    let inputIntervalo4 = document.createElement("input");
+    inputIntervalo4.type = "number";
+    inputIntervalo4.value = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+
     let btn4 = document.createElement("button");
     btn4.className = "aplicar-btn";
     btn4.innerText = "Aplicar";
+
+    let btnDisable4 = document.createElement("button");
+    btnDisable4.className = "aplicar-btn";
+    btnDisable4.innerText = "Desabilitar atualização";
+
+    btnDisable4.onclick = async () => {
+      let url = "layouts/layout-4telas.html?t1=" + select4a.value + "&t2=" + select4b.value + "&t3=" + select4c.value + "&t4=" + select4d.value;
+
+      await mudar(tv, url, 0);
+      await carregar();
+    };
+
     let preview4 = createPreview(4, [select4a.value, select4b.value, select4c.value, select4d.value]);
     const refresh4 = () => updatePreview(preview4, 4, [select4a.value, select4b.value, select4c.value, select4d.value]);
     select4a.addEventListener('change', refresh4);
@@ -276,7 +376,7 @@ async function carregar(){
       let u = new Set(arr);
       //if(u.size < 4){ alert('Escolha quatro telas diferentes.'); return; }
       let url = "layouts/layout-4telas.html?t1=" + select4a.value + "&t2=" + select4b.value + "&t3=" + select4c.value + "&t4=" + select4d.value;
-      await mudar(tv, url);
+      await mudar(tv, url, parseInt(inputIntervalo4.value) );
       delete pendingSelections[select4a.id];
       delete pendingSelections[select4b.id];
       delete pendingSelections[select4c.id];
@@ -291,7 +391,9 @@ async function carregar(){
     row4.appendChild(select4b);
     row4.appendChild(select4c);
     row4.appendChild(select4d);
+    row4.appendChild(inputIntervalo4);
     row4.appendChild(btn4);
+    row4.appendChild(btnDisable4);
 
     let previewWrapper4 = document.createElement('div');
     previewWrapper4.className = 'preview-wrapper';
@@ -304,7 +406,9 @@ async function carregar(){
     let block4 = addBlock("Exibir 4 telas (25% | 25% | 25% | 25%)", [row4, previewWrapper4]);
 
     // Aplica estado atual dos selects baseado no state tv
-    let selected = parseLayoutState(state[tv]);
+    let selected = parseLayoutState(
+    typeof state[tv] === "string" ? state[tv] : state[tv].pagina
+  );
     if(selected.type===1){
       block1.open=true;
       if(!select1.dataset.dirty) select1.value = selected.screens[0] || 1;
@@ -336,17 +440,21 @@ async function carregar(){
     container.appendChild(div);
   }
 }
-async function mudar(tv,pagina){
+async function mudar(tv, pagina, intervalo){
 
   await fetch("/update", {
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ tv, pagina })
+    body:JSON.stringify({
+      tv,
+      pagina,
+      intervalo
+    })
   });
 
 }
 
-setInterval(carregar,30000);
+setInterval(carregar,10000);
 carregar();
 
 </script>
