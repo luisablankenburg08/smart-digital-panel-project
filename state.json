@@ -1,6 +1,6 @@
 {
   "tv-1": {
-    "pagina": "layouts/tela2.html",
-    "intervalo": 2000
+    "pagina": "layouts/tela4.html",
+    "intervalo": 0
   }
 }

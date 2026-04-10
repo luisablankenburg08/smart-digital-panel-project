@@ -10,7 +10,7 @@
 
 <body>
 
-<h1 style="text-align: center; color: #1c9230">Painel de Controle</h1>
+<h1 class="h1painel">Painel de Controle</h1>
 
 <div id="tvs"></div>
 
@@ -32,7 +32,6 @@ async function carregar(){
     return;
   }
 
-  // 🔥 NOVO: trata state vazio corretamente
   if(!state || Object.keys(state).length === 0){
     container.innerHTML = "<p>Nenhuma TV conectada</p>";
     return;
@@ -40,7 +39,6 @@ async function carregar(){
 
   // preserva o estado aberto dos detalhes enquanto faz refresh
   let openState = {};
-  // Carrega estados salvos do localStorage
   let savedStates = JSON.parse(localStorage.getItem('tvDetailsStates') || '{}');
 
   container.querySelectorAll(".tv").forEach(tvDiv => {
@@ -164,15 +162,40 @@ async function carregar(){
       return d;
     };
 
-    // Exibir 1 tela
+    // =========================
+    // EXIBIR 1 TELA
+    // =========================
+
     let row1 = document.createElement("div");
     row1.className = "control-row";
 
     let select1 = makeSelect(tv+"-1");
 
-    let inputIntervalo1 = document.createElement("input");
-    inputIntervalo1.type = "number";
-    inputIntervalo1.value = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+    let tituloUpdate1 = document.createElement("div");
+    tituloUpdate1.className = "update-title";
+    tituloUpdate1.innerText = "Atualização da tela";
+
+    let inputIntervalo1 = document.createElement("select");
+    inputIntervalo1.className = "input-update";
+
+    const opcoes = [
+      { label: "2s", value: 2000 },
+      { label: "10s", value: 10000 },
+      { label: "30s", value: 30000 },
+      { label: "5min", value: 300000 },
+      { label: "10min", value: 600000 }
+    ];
+
+    opcoes.forEach(op => {
+      let option = document.createElement("option");
+      option.value = op.value;
+      option.text = op.label;
+      inputIntervalo1.appendChild(option);
+    });
+
+    // mantém valor atual
+    let valorAtual = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+    inputIntervalo1.value = valorAtual;
 
 
     let btn1 = document.createElement("button");
@@ -204,10 +227,13 @@ async function carregar(){
 
       await carregar();
     };
+    
     row1.appendChild(select1);
-    row1.appendChild(inputIntervalo1);
     row1.appendChild(btn1);
+    row1.appendChild(tituloUpdate1);
+    row1.appendChild(inputIntervalo1);
     row1.appendChild(btnDisable1);
+
 
     let previewWrapper1 = document.createElement('div');
     previewWrapper1.className = 'preview-wrapper';
@@ -219,15 +245,39 @@ async function carregar(){
 
     let block1 = addBlock("Exibir 1 tela (fullscreen)", [row1, previewWrapper1]);
 
-    // Exibir 2 telas
+    // =========================
+    // EXIBIR 2 TELAS
+    // =========================
     let row2 = document.createElement("div");
     row2.className = "control-row";
     let select2a = makeSelect(tv+"-2a");
     let select2b = makeSelect(tv+"-2b");
 
-    let inputIntervalo2 = document.createElement("input");
-    inputIntervalo2.type = "number";
-    inputIntervalo2.value = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+    let tituloUpdate2 = document.createElement("div");
+    tituloUpdate2.className = "update-title";
+    tituloUpdate2.innerText = "Atualização da tela";
+
+    let inputIntervalo2 = document.createElement("select");
+    inputIntervalo2.className = "input-update";
+
+    const opcoes2 = [
+      { label: "2s", value: 2000 },
+      { label: "10s", value: 10000 },
+      { label: "30s", value: 30000 },
+      { label: "5min", value: 300000 },
+      { label: "10min", value: 600000 }
+    ];
+
+    opcoes2.forEach(op => {
+      let option = document.createElement("option");
+      option.value = op.value;
+      option.text = op.label;
+      inputIntervalo2.appendChild(option);
+    });
+
+    // mantém valor atual
+    let valorAtual2 = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+    inputIntervalo2.value = valorAtual2;
 
     let btn2 = document.createElement("button");
     btn2.className = "aplicar-btn";
@@ -259,11 +309,15 @@ async function carregar(){
       select2b.dataset.dirty = "";
       await carregar();
     };
+    
+    
     row2.appendChild(select2a);
     row2.appendChild(select2b);
-    row2.appendChild(inputIntervalo2);
     row2.appendChild(btn2);
+    row2.appendChild(tituloUpdate2);
+    row2.appendChild(inputIntervalo2);
     row2.appendChild(btnDisable2);
+    
 
     let previewWrapper2 = document.createElement('div');
     previewWrapper2.className = 'preview-wrapper';
@@ -282,9 +336,33 @@ async function carregar(){
     let select3b = makeSelect(tv+"-3b");
     let select3c = makeSelect(tv+"-3c");
 
-    let inputIntervalo3 = document.createElement("input");
-    inputIntervalo3.type = "number";
-    inputIntervalo3.value = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+    let tituloUpdate3 = document.createElement("div");
+    tituloUpdate3.className = "update-title";
+    tituloUpdate3.innerText = "Atualização da tela";
+
+    let inputIntervalo3 = document.createElement("select");
+    inputIntervalo3.className = "input-update";
+
+    const opcoes3 = [
+      { label: "2s", value: 2000 },
+      { label: "10s", value: 10000 },
+      { label: "30s", value: 30000 },
+      { label: "5min", value: 300000 },
+      { label: "10min", value: 600000 }
+    ];
+
+    opcoes3.forEach(op => {
+      let option = document.createElement("option");
+      option.value = op.value;
+      option.text = op.label;
+      inputIntervalo3.appendChild(option);
+    });
+
+    // mantém valor atual
+    let valorAtual3 = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+    inputIntervalo3.value = valorAtual3;
+
+
 
     let btn3 = document.createElement("button");
     btn3.className = "aplicar-btn";
@@ -324,8 +402,9 @@ async function carregar(){
     row3.appendChild(select3a);
     row3.appendChild(select3b);
     row3.appendChild(select3c);
-    row3.appendChild(inputIntervalo3);
     row3.appendChild(btn3);
+    row3.appendChild(tituloUpdate3);
+    row3.appendChild(inputIntervalo3);
     row3.appendChild(btnDisable3);
 
     let previewWrapper3 = document.createElement('div');
@@ -346,9 +425,31 @@ async function carregar(){
     let select4c = makeSelect(tv+"-4c");
     let select4d = makeSelect(tv+"-4d");
 
-    let inputIntervalo4 = document.createElement("input");
-    inputIntervalo4.type = "number";
-    inputIntervalo4.value = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+    let tituloUpdate4 = document.createElement("div");
+    tituloUpdate4.className = "update-title";
+    tituloUpdate4.innerText = "Atualização da tela (ms)";
+
+    let inputIntervalo4 = document.createElement("select");
+    inputIntervalo4.className = "input-update";
+
+    const opcoes4 = [
+      { label: "2s", value: 2000 },
+      { label: "10s", value: 10000 },
+      { label: "30s", value: 30000 },
+      { label: "5min", value: 300000 },
+      { label: "10min", value: 600000 }
+    ];
+
+    opcoes4.forEach(op => {
+      let option = document.createElement("option");
+      option.value = op.value;
+      option.text = op.label;
+      inputIntervalo4.appendChild(option);
+    });
+
+    // mantém valor atual
+    let valorAtual4 = (typeof state[tv] === "object" ? state[tv].intervalo : 2000);
+    inputIntervalo4.value = valorAtual4;
 
     let btn4 = document.createElement("button");
     btn4.className = "aplicar-btn";
@@ -391,8 +492,9 @@ async function carregar(){
     row4.appendChild(select4b);
     row4.appendChild(select4c);
     row4.appendChild(select4d);
-    row4.appendChild(inputIntervalo4);
     row4.appendChild(btn4);
+    row4.appendChild(tituloUpdate4)
+    row4.appendChild(inputIntervalo4);
     row4.appendChild(btnDisable4);
 
     let previewWrapper4 = document.createElement('div');

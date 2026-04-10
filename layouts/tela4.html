@@ -55,7 +55,8 @@ function onYouTubeIframeAPIReady() {
     videoId: '1GiXd3lAjrE',
     playerVars: {
       autoplay: 1,
-      mute: 1,
+      mute: 0,
+      volume: 10,
       controls: 0,
       rel: 0,
       modestbranding: 1
@@ -85,7 +86,7 @@ function onPlayerStateChange(event) {
 }
 
 // =========================
-// 🔥 PARA VÍDEO AO TROCAR TELA
+// PARA VÍDEO AO TROCAR TELA
 // =========================
 document.addEventListener("visibilitychange", () => {
   if (document.hidden && player) {
@@ -96,7 +97,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // =========================
-// 🔥 GARANTE PARADA TOTAL
+// GARANTE PARADA TOTAL
 // =========================
 window.addEventListener("beforeunload", () => {
   if (player) {
