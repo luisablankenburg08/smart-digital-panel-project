@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<title>Viewer</title>
 </head>
 
 <body style="margin:0">
@@ -11,13 +12,18 @@
 <script>
 
 let tvId = localStorage.getItem("tvId");
-let heartbeatInterval;
-let loop;
 
-// controle de atualização visual
+// controle interno
+let ultimaPagina = null;
 let intervaloAtual = 2000;
-let ultimoUpdate = 0;
 
+// timers
+let heartbeatInterval = null;
+let polling = null;
+
+// =========================
+// REGISTRO
+// =========================
 async function registrar(){
   try{
     let res = await fetch("/register", {
@@ -33,37 +39,39 @@ async function registrar(){
 
     iniciarHeartbeat();
 
-    // 🔥 ENVIA PRIMEIRO PING IMEDIATO
-    await fetch("/ping", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ tv: tvId })
-    });
+    // ping imediato
+    await ping();
 
   }catch(e){
     console.error("Erro register:", e);
   }
 }
 
-// heartbeat
-async function iniciarHeartbeat(){
-  if(heartbeatInterval) clearInterval(heartbeatInterval);
-  
-  heartbeatInterval = setInterval(async () => {
-    try{
-      await fetch("/ping", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ tv: tvId }),
-        keepalive: true
-      });
-    }catch(e){
-      console.error("Erro heartbeat:", e);
-    }
-  }, 5000);
+// =========================
+// HEARTBEAT
+// =========================
+async function ping(){
+  try{
+    await fetch("/ping", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ tv: tvId }),
+      keepalive: true
+    });
+  }catch(e){
+    console.error("Erro ping:", e);
+  }
 }
 
-// desconectar
+function iniciarHeartbeat(){
+  if(heartbeatInterval) clearInterval(heartbeatInterval);
+
+  heartbeatInterval = setInterval(ping, 5000);
+}
+
+// =========================
+// DESCONEXÃO
+// =========================
 function desligar(){
   if(tvId){
     const params = new URLSearchParams();
@@ -76,14 +84,18 @@ window.addEventListener("beforeunload", desligar);
 window.addEventListener("pagehide", desligar);
 window.addEventListener("unload", desligar);
 
+// =========================
+// LOOP PRINCIPAL
+// =========================
 async function carregar(){
 
   try{
     let res = await fetch("/state");
     let state = await res.json();
 
+    // TV não registrada → recria
     if(!tvId || !state[tvId]){
-      console.log("TV não registrada. Registrando novamente...");
+      console.log("TV não registrada. Re-registrando...");
       localStorage.removeItem("tvId");
       await registrar();
       return;
@@ -91,38 +103,38 @@ async function carregar(){
 
     let config = state[tvId];
 
-    let url = typeof config === "string" ? config : config.pagina;
+    let pagina = typeof config === "string" ? config : config.pagina;
     let novoIntervalo = typeof config === "string" ? 2000 : config.intervalo ?? 2000;
 
-    // 🔥 Atualiza intervalo dinamicamente
-    if(novoIntervalo !== intervaloAtual){
-      intervaloAtual = novoIntervalo;
-
-      clearInterval(loop);
-
-      // 🔥 Se intervalo = 0 → não cria loop
-      if(intervaloAtual > 0){
-        loop = setInterval(carregar, intervaloAtual);
-      }
-    }
-
     let frame = document.getElementById("frame");
-    let fullUrl = location.origin + "/" + url;
 
-    // 🔥 Se atualização DESABILITADA → não mexe na tela
-    if(intervaloAtual === 0){
-      return;
+    // =========================
+    // TROCA DE TELA (SEMPRE)
+    // =========================
+    if(ultimaPagina !== pagina){
+      frame.src = pagina;
+      ultimaPagina = pagina;
     }
 
-    // 🔥 Cache bust só quando realmente vai atualizar
-    if(url.includes("?")){
-      url += "&_=" + Date.now();
-    }else{
-      url += "?_=" + Date.now();
-    }
+    // =========================
+    // REFRESH AUTOMÁTICO
+    // =========================
+    if(novoIntervalo > 0){
 
-    if(frame.src !== fullUrl){
-      frame.src = url;
+      let refreshUrl = pagina;
+
+      if(refreshUrl.includes("?")){
+        refreshUrl += "&_=" + Date.now();
+      }else{
+        refreshUrl += "?_=" + Date.now();
+      }
+
+      // evita refresh duplicado imediato
+      if(Date.now() - intervaloAtual >= novoIntervalo){
+        frame.src = refreshUrl;
+        intervaloAtual = Date.now();
+      }
+
     }
 
   }catch(e){
@@ -130,14 +142,18 @@ async function carregar(){
   }
 }
 
+// =========================
+// INICIALIZAÇÃO
+// =========================
 async function iniciar(){
+
   await registrar();
 
-  carregar();
+  // primeira execução imediata
+  await carregar();
 
-  if(intervaloAtual > 0){
-    loop = setInterval(carregar, intervaloAtual);
-  }
+  // polling leve e constante (melhor prática)
+  polling = setInterval(carregar, 2000);
 }
 
 iniciar();

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TELA 4</title>
-    <style>
-        
-  body {
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TELA 4</title>
+
+<style>
+body {
   margin: 0;
   background: rgb(230, 173, 225);
   font-family: Arial, sans-serif;
@@ -24,83 +24,89 @@
   aspect-ratio: 16 / 9;
 }
 
-.video-container iframe {
-  width: 100%;
-  height: 100%;
-  border: 20px;
-}
-
 #player {
   width: 100%;
   height: 100%;
 }
-
 </style>
+
 </head>
+
 <body>
-  <h1> Vídeo Institucional/página do ifsc</h1>
 
-  <div class="video-container">
-    <div id="player"></div>
-  </div>
+<h1>Vídeo Institucional / Página do IFSC</h1>
 
-  <!-- API do YouTube -->
-  <script src="https://www.youtube.com/iframe_api"></script>
+<div class="video-container">
+  <div id="player"></div>
+</div>
 
-  <script>
+<!-- API do YouTube -->
+<script src="https://www.youtube.com/iframe_api"></script>
 
-  let player;
+<script>
 
-  // quando a API carrega
-  function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-      videoId: 'qgll994LTvg',
-      playerVars: {
-        autoplay: 1,
-        mute: 1,
-        controls: 0,
-        rel: 0,
-        modestbranding: 1
+let player;
+
+// =========================
+// CRIA PLAYER
+// =========================
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('player', {
+    videoId: '1GiXd3lAjrE',
+    playerVars: {
+      autoplay: 1,
+      mute: 1,
+      controls: 0,
+      rel: 0,
+      modestbranding: 1
+    },
+    events: {
+      'onReady': (event) => {
+        event.target.playVideo();
       },
-      events: {
-        'onReady': (event) => {
-          event.target.playVideo();
-        },
-        'onStateChange': onPlayerStateChange
-      }
-    });
-  }
-
-  // quando o estado do vídeo muda
-  function onPlayerStateChange(event) {
-
-    // 0 = terminou
-    if (event.data === YT.PlayerState.ENDED) {
-      console.log("Vídeo terminou");
-
-      atualizarConteudo();
+      'onStateChange': onPlayerStateChange
     }
-  }
+  });
+}
 
-  function atualizarConteudo(){
+// =========================
+// LOOP DO VÍDEO
+// =========================
+function onPlayerStateChange(event) {
+
+  // 0 = terminou
+  if (event.data === YT.PlayerState.ENDED) {
+    console.log("Vídeo terminou");
+
+    // reinicia automaticamente
     player.seekTo(0);
     player.playVideo();
   }
+}
 
-  </script> 
+// =========================
+// 🔥 PARA VÍDEO AO TROCAR TELA
+// =========================
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && player) {
+    try {
+      player.pauseVideo();
+    } catch(e){}
+  }
+});
 
-  <!-- <iframe id="site" style="width:100%;height:100vh;border:none;"></iframe>
+// =========================
+// 🔥 GARANTE PARADA TOTAL
+// =========================
+window.addEventListener("beforeunload", () => {
+  if (player) {
+    try {
+      player.stopVideo();
+    } catch(e){}
+  }
+});
 
-    <script>
-    const SITE = "https://ifsc.edu.br";
-
-    window.onload = () => {
-    const proxyUrl = "http://191.36.56.76:4000/proxy?url=" + encodeURIComponent(SITE);
-    document.getElementById("site").src = proxyUrl;
-    };
-    </script> -->
-
-
+</script>
 
 </body>
 </html>
