@@ -1,4 +1,4 @@
-arquivo de inicialização:
+arquivo de inicialização: .config/labwc/autostart
 
 sleep 3
 wayfire-logout --hide-panel &
