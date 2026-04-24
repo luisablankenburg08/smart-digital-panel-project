@@ -13,6 +13,13 @@ button{
   background-color: #78f18c;
 }
 
+.mensagemtv{
+  font-size: 24px;
+  color: #1c9230;
+  font-weight: bold;
+  margin-top: 5vw;
+  margin-left: 5vw;
+}
 .aplicar-btn:hover {
   background-color: #45a049;
 }
