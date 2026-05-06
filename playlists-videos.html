@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Playlist - Vídeos</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+<h1 class="titulosplaylists">Playlist de Vídeos</h1>
+
+<div id="info-tv"></div>
+
+<!-- Adicionar vídeo -->
+<div class="add-video">
+  <input type="text" id="video-url" placeholder="URL do vídeo (ex: video.mp4)">
+  
+  <select id="video-duration">
+    <option value="10">10s</option>
+    <option value="20">20s</option>
+    <option value="30">30s</option>
+    <option value="60">1 min</option>
+  </select>
+
+  <button onclick="adicionarVideo()">Adicionar</button>
+</div>
+
+<!-- Lista de vídeos -->
+<div id="lista-videos"></div>
+
+<!-- Salvar -->
+<button class="salvar-btn" onclick="salvarPlaylist()">Salvar Playlist</button>
+
+<script>
+let tv = new URLSearchParams(window.location.search).get("tv");
+let playlist = [];
+
+document.getElementById("info-tv").innerText = "Configurando: " + tv;
+
+// ----------------------
+// ➕ Adicionar vídeo
+// ----------------------
+function adicionarVideo(){
+  let url = document.getElementById("video-url").value;
+  let duration = document.getElementById("video-duration").value;
+
+  if(!url){
+    alert("Digite uma URL válida");
+    return;
+  }
+
+  playlist.push({
+    src: url,
+    duration: parseInt(duration)
+  });
+
+  document.getElementById("video-url").value = "";
+  renderLista();
+}
+
+// ----------------------
+// 🗑️ Remover vídeo
+// ----------------------
+function removerVideo(index){
+  playlist.splice(index, 1);
+  renderLista();
+}
+
+// ----------------------
+// 📋 Renderizar lista
+// ----------------------
+function renderLista(){
+  let container = document.getElementById("lista-videos");
+  container.innerHTML = "";
+
+  playlist.forEach((video, index)=>{
+    let item = document.createElement("div");
+    item.className = "video-item";
+
+    item.innerHTML = `
+      <span>${video.src} (${video.duration}s)</span>
+      <button onclick="removerVideo(${index})">Remover</button>
+    `;
+
+    container.appendChild(item);
+  });
+}
+
+// ----------------------
+// 💾 Salvar playlist
+// ----------------------
+async function salvarPlaylist(){
+
+  await fetch("/save-playlist", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      tv: tv,
+      type: "videos",
+      items: playlist
+    })
+  });
+
+  alert("Playlist salva!");
+}
+
+</script>
+
+</body>
+</html>

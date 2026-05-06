@@ -1,7 +1,13 @@
+body {
+  overflow: hidden;
+  background-color: rgb(243, 233, 233);
+}
 .tv{
+  width: 40vw;
   border:1px solid #ccc;
-  margin:10px;
+  margin-left:29vw;
   padding:10px;
+  margin-bottom: 10px;
 }
 
 .h1painel {
@@ -10,7 +16,7 @@
 }
 button{
   margin:5px;
-  background-color: #78f18c;
+  background-color: #2f9e40;
 }
 
 .mensagemtv{
@@ -65,9 +71,6 @@ button{
   margin:4px 0;
 }
 
-body {
-  background-color: rgb(243, 233, 233);
-  }
 
 .tv h2 {
   color: #1c9230;  /* Azul */
@@ -196,4 +199,75 @@ body {
   font-weight: 800;
   color: #1c5f9a;
   margin-top: 8px;
+}
+
+/* CSS DE PLAYLISTS E CAMPO DAS TVS */
+
+.tv-content {
+  height: 17vw;
+  display: flex;
+  gap: 2vw;
+  overflow: hidden;
+}
+
+.tv-preview-frame {
+  width: 20vw;
+  height: 14vw;
+  border: 2px solid #000;
+  overflow:hidden;
+}
+
+.tv-buttons {
+  width: 8vw;
+  height: 1vw;
+  float: right;
+  display: flex;
+  flex-direction: column;
+  margin-left: 5vw;
+  gap: 1vw;
+}
+/* CSS DA PÁGINA PLAYLIST-VIDEOS */
+
+.titulosplaylists {
+  text-align: center;
+}
+.playlist-btn {
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.add-video {
+  margin-bottom: 20px;
+}
+
+.video-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 5px;
+}
+
+.salvar-btn {
+  margin-top: 20px;
+  padding: 10px;
+  font-size: 16px;
+}
+
+/* CSS DA PÁGINA PLAYLIST-AVISOS */
+
+#aviso-texto {
+  display: flex;
+  resize: none; 
+  width: 50vw;
+  height: 50vh;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  margin-left: 25vw;
+}
+
+#aviso-texto:focus {
+  outline: 3px #2f9e40 solid;
 }
