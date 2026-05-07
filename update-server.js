@@ -5,6 +5,8 @@ const { randomUUID } = require("crypto")
 
 const app = express()
 
+const PLAYLIST_FILE = path.join(__dirname, "playlists.json");
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
@@ -35,7 +37,7 @@ function removerTV(tvId) {
 
 setInterval(() => {
   const agora = Date.now()
-  const timeout = 10000
+  const timeout = 30000
 
   for (const [tvId, ultimoHeartbeat] of tvHeartbeats.entries()) {
     if (agora - ultimoHeartbeat > timeout) {
@@ -45,20 +47,53 @@ setInterval(() => {
   }
 }, 10000)
 
+// LER PLAYLISTS
+function readPlaylists(){
+  try{
+    return JSON.parse(fs.readFileSync(PLAYLIST_FILE));
+  }catch{
+    return {};
+  }
+}
+// SALVAR PLAYLISTS
+function savePlaylists(data){
+  fs.writeFileSync(PLAYLIST_FILE, JSON.stringify(data, null, 2));
+}
+
 // REGISTRO (AGORA COM REAPROVEITAMENTO DE ID)
 app.post("/register", (req, res) => {
-  let { tv } = req.body
-  let state = JSON.parse(fs.readFileSync(STATE_FILE))
-  let tvs = Object.keys(state)
 
-  // ✅ Se já existe → reutiliza
-  if (tv && state[tv]) {
-    tvHeartbeats.set(tv, Date.now()) // 🔥 MARCA COMO ATIVA
+  let { tv } = req.body
+
+  let state = JSON.parse(fs.readFileSync(STATE_FILE))
+
+  // ✅ TV já existe
+  if (tv) {
+
+    // recria se não existir mais
+    if (!state[tv]) {
+
+      state[tv] = {
+        pagina: "layouts/tela1.html",
+        intervalo: 2000
+      }
+
+      fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2))
+    }
+
+    tvHeartbeats.set(tv, Date.now())
+
     return res.json({ tv })
   }
 
-  // ✅ cria nova
-  let newTv = "tv-" + (tvs.length + 1)
+  // procura menor número livre
+  let numero = 1
+
+  while (state[`tv${numero}`]) {
+    numero++
+  }
+
+  let newTv = `tv${numero}`
 
   state[newTv] = {
     pagina: "layouts/tela1.html",
@@ -67,7 +102,7 @@ app.post("/register", (req, res) => {
 
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2))
 
-  tvHeartbeats.set(newTv, Date.now()) // 🔥 ESSENCIAL
+  tvHeartbeats.set(newTv, Date.now())
 
   res.json({ tv: newTv })
 })
@@ -136,3 +171,57 @@ app.post("/unregister", (req, res) => {
 app.listen(3000, "0.0.0.0", () => {
   console.log("Servidor rodando")
 })
+
+//rota de leitura de playlists (vídeos, avisos, etc)
+app.get("/playlist", (req,res)=>{
+
+  let { tv, type } = req.query;
+
+  if(!fs.existsSync("playlists.json")){
+
+    return res.json([]);
+  }
+
+  let playlists =
+    JSON.parse(
+      fs.readFileSync("playlists.json")
+    );
+
+  let items =
+    playlists?.[tv]?.[type] || [];
+
+  res.json(items);
+});
+
+
+//rota para salvar playlists (vídeos, avisos, etc)
+app.post("/save-playlist", (req,res)=>{
+
+  let { tv, type, items } = req.body;
+
+  let playlists = {};
+
+  if(fs.existsSync("playlists.json")){
+
+    playlists =
+      JSON.parse(
+        fs.readFileSync("playlists.json")
+      );
+  }
+
+  if(!playlists[tv]){
+
+    playlists[tv] = {};
+  }
+
+  playlists[tv][type] = items;
+
+  fs.writeFileSync(
+    "playlists.json",
+    JSON.stringify(playlists,null,2)
+  );
+
+  res.json({ ok:true });
+});
+
+app.use("/uploads", express.static("uploads"));
