@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style-playlists.css">
+
+</head>
+<body>
+    <h2 class="titulosplaylists">PLAYLISTS - AVISOS</h2>
+    <textarea id="aviso-texto" placeholder="Digite a mensagem..."></textarea>
+    <button onclick="adicionarAviso()">
+      Adicionar Aviso
+    </button>
+
+    <button onclick="salvarPlaylist()">
+      Aplicar Playlist
+    </button>
+</body>
+
+<script>
+
+let playlist = [];
+
+let params = new URLSearchParams(window.location.search);
+
+let tv = params.get("tv");
+
+// ========================================
+// Adiciona aviso
+// ========================================
+
+function adicionarAviso(){
+
+  let texto =
+    document.getElementById("aviso-texto").value;
+
+  if(!texto){
+
+    alert("Digite a mensagem do aviso");
+
+    return;
+  }
+
+  playlist.push({
+
+    texto: texto,
+
+    duracao: 10
+
+  });
+
+  document.getElementById("aviso-texto").value = "";
+
+  alert("Aviso adicionado à playlist");
+}
+
+// ========================================
+// Salvar playlist
+// ========================================
+
+async function salvarPlaylist(){
+
+  if(playlist.length === 0){
+
+    alert("Nenhum aviso adicionado");
+
+    return;
+  }
+
+  // salva playlist
+  await fetch("/save-playlist", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+
+      tv: tv,
+
+      type: "avisos",
+
+      items: playlist
+
+    })
+
+  });
+
+  // ativa viewer
+  await fetch("/update", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+
+      tv: tv,
+
+      pagina: "avisos",
+
+      intervalo: 0
+
+    })
+
+  });
+
+  alert("Avisos enviados!");
+
+  window.location.href = "/controle.html";
+}
+
+</script>
+</html>

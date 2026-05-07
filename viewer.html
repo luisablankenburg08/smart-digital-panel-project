@@ -3,21 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <title>Viewer</title>
+
+<style>
+
+body{
+  margin:0;
+  overflow:hidden;
+  background:black;
+}
+
+#content{
+  width:100vw;
+  height:100vh;
+  display:none;
+}
+
+.aviso{
+  width:100%;
+  height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  font-size:4rem;
+  font-family:Arial;
+  background:#111;
+  text-align:center;
+  padding:40px;
+  box-sizing:border-box;
+}
+
+.imagemViewer{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:black;
+}
+
+</style>
+
+
 </head>
 
 
-<!-- VIDEO PLAYER -->
-<video id="videoPlayer" style="display:none;width:100%;height:100vh;" autoplay muted></video>
+<!-- IFRAME  -->
+<iframe
+  id="frame"
+  allow="autoplay; fullscreen"
+  allowfullscreen
+  style="border:none;width:100%;height:100vh;"
+></iframe>
 
-<!-- IFRAME (modo antigo / fallback) -->
-<iframe id="frame" style="border:none;width:100%;height:100vh;"></iframe>
+<div id="content"></div>
+
 
 <script>
 
 // =========================
 // 🔧 CONFIG INICIAL
 // =========================
-
+let playlistRodando = false;
 let params = new URLSearchParams(window.location.search);
 let preview = params.get("preview") === "true";
 
@@ -33,11 +78,8 @@ let modoAtual = "iframe";
 // timers
 let heartbeatInterval = null;
 let polling = null;
-let timeoutVideo = null;
 
-// playlist
-let playlist = [];
-let videoIndex = 0;
+
 
 // =========================
 // REGISTRO
@@ -111,38 +153,106 @@ window.addEventListener("pagehide", desligar);
 window.addEventListener("unload", desligar);
 
 // =========================
-// 🎬 PLAYER DE VÍDEO
+// 🎬 PLAYLIST IFRAME
 // =========================
-function rodarPlaylistVideos(){
 
-  let video = document.getElementById("videoPlayer");
+async function mostrarConteudo(type){
+
   let frame = document.getElementById("frame");
+  let content = document.getElementById("content");
 
-  frame.style.display = "none";
-  video.style.display = "block";
+  let res =
+    await fetch(`/playlist?tv=${tvId}&type=${type}`);
 
-  function proximo(){
+  let items = await res.json();
 
-    if(playlist.length === 0){
-      document.body.innerHTML = "<h2>Sem vídeos cadastrados</h2>";
-      return;
-    }
+  // pega apenas o primeiro item
+  let item = items[0];
 
-    let item = playlist[videoIndex];
+  if(!item){
 
-    video.src = item.src;
-    video.currentTime = 0;
-    video.play();
+    frame.style.display = "none";
 
-    if(timeoutVideo) clearTimeout(timeoutVideo);
+    content.style.display = "flex";
 
-    timeoutVideo = setTimeout(() => {
-      videoIndex = (videoIndex + 1) % playlist.length;
-      proximo();
-    }, item.duration * 1000);
+    content.innerHTML = `
+      <div class="aviso">
+        Nenhum conteúdo cadastrado
+      </div>
+    `;
+
+    return;
   }
 
-  proximo();
+  // =========================
+  // VÍDEOS
+  // =========================
+  if(type === "videos"){
+
+    frame.style.display = "block";
+
+    content.style.display = "none";
+
+    frame.src = item.iframe;
+
+    return;
+  }
+
+  // =========================
+  // AVISOS
+  // =========================
+  if(type === "avisos"){
+
+    frame.style.display = "none";
+
+    content.style.display = "block";
+
+    content.innerHTML = `
+      <div class="aviso">
+        ${item.texto}
+      </div>
+    `;
+
+    return;
+  }
+
+  // =========================
+  // MAPA
+  // =========================
+  if(type === "mapa"){
+
+    frame.style.display = "none";
+
+    content.style.display = "block";
+
+    content.innerHTML = `
+      <img
+        src="${item.src}"
+        class="imagemViewer"
+      >
+    `;
+
+    return;
+  }
+
+  // =========================
+  // CALENDÁRIO
+  // =========================
+  if(type === "calendario"){
+
+    frame.style.display = "none";
+
+    content.style.display = "block";
+
+    content.innerHTML = `
+      <img
+        src="${item.src}"
+        class="imagemViewer"
+      >
+    `;
+
+    return;
+  }
 }
 
 // =========================
@@ -151,87 +261,123 @@ function rodarPlaylistVideos(){
 async function carregar(){
 
   try{
+
     let res = await fetch("/state");
     let state = await res.json();
 
     if(!tvId || !state[tvId]){
+
       if(!preview){
+
         console.log("Re-registrando TV...");
+
         localStorage.removeItem("tvId");
+
         await registrar();
       }
+
       return;
     }
 
     let config = state[tvId];
 
-    let pagina = typeof config === "string"
-      ? config
-      : config.pagina;
+    let pagina =
+      typeof config === "string"
+        ? config
+        : config.pagina;
 
-    let novoIntervalo = typeof config === "string"
-      ? 2000
-      : config.intervalo ?? 2000;
+    let frame =
+      document.getElementById("frame");
 
-    let video = document.getElementById("videoPlayer");
-    let frame = document.getElementById("frame");
+    let content =
+      document.getElementById("content");
 
     // =========================
-    // 🎬 MODO VÍDEOS
+    // AVISOS
     // =========================
-    if(pagina && pagina.includes("videos")){
+    if(pagina && pagina.includes("avisos")){
 
-      if(modoAtual !== "video"){
+      if(modoAtual !== "avisos"){
 
-        modoAtual = "video";
+        modoAtual = "avisos";
 
-        let res = await fetch(`/playlist?tv=${tvId}&type=videos`);
-        playlist = await res.json();
-
-        videoIndex = 0;
-
-        rodarPlaylistVideos();
+        mostrarConteudo("avisos");
       }
 
       return;
     }
 
     // =========================
-    // 🖥️ MODO IFRAME (fallback)
+    // IMAGENS
     // =========================
-    if(modoAtual !== "iframe"){
+    if(pagina && pagina.includes("imagens")){
 
-      modoAtual = "iframe";
+      if(modoAtual !== "imagens"){
 
-      video.style.display = "none";
-      frame.style.display = "block";
+        modoAtual = "imagens";
 
-      if(timeoutVideo) clearTimeout(timeoutVideo);
+        mostrarConteudo("imagens");
+      }
+
+      return;
     }
 
+    // =========================
+    // VÍDEOS
+    // =========================
+    if(pagina && pagina.includes("videos")){
+
+      if(modoAtual !== "videos"){
+
+        modoAtual = "videos";
+
+        mostrarConteudo("videos");
+      }
+
+      return;
+    }
+
+    if(pagina && pagina.includes("mapa")){
+
+      if(modoAtual !== "mapa"){
+
+        modoAtual = "mapa";
+
+        mostrarConteudo("mapa");
+      }
+
+      return;
+    }
+
+    if(pagina && pagina.includes("calendario")){
+
+      if(modoAtual !== "calendario"){
+
+        modoAtual = "calendario";
+
+        mostrarConteudo("calendario");
+      }
+
+      return;
+    }
+
+    // =========================
+    // IFRAME NORMAL
+    // =========================
+    modoAtual = "iframe";
+
+    frame.style.display = "block";
+    content.style.display = "none";
+
     if(ultimaPagina !== pagina){
+
       frame.src = pagina;
+
       ultimaPagina = pagina;
     }
 
-    // refresh automático (legado)
-    if(novoIntervalo > 0){
-
-      let refreshUrl = pagina;
-
-      if(refreshUrl.includes("?")){
-        refreshUrl += "&_=" + Date.now();
-      }else{
-        refreshUrl += "?_=" + Date.now();
-      }
-
-      if(Date.now() - intervaloAtual >= novoIntervalo){
-        frame.src = refreshUrl;
-        intervaloAtual = Date.now();
-      }
-    }
-
   }catch(e){
+
     console.error("Erro ao carregar:", e);
   }
 }

@@ -61,71 +61,75 @@ async function carregar(){
 
   container.innerHTML = "";
 
-  for(let tv in state){
+  Object.keys(state)
+  .sort((a,b)=>{
 
-  let div = document.createElement("div");
-  div.className = "tv";
+    let na = parseInt(a.replace("tv",""));
+    let nb = parseInt(b.replace("tv",""));
 
-  // título da TV
-  let titulo = document.createElement("h2");
-  titulo.innerText = tv;
-  div.appendChild(titulo);
+    return na - nb;
 
-  // container principal (imagem + botões)
-  let content = document.createElement("div");
-  content.className = "tv-content";
+  })
+  .forEach(tv => {
 
-  // -------------------------
-  // 📺 IMAGEM DA TELA ATUAL
-  // -------------------------
+    let div = document.createElement("div");
+    div.className = "tv";
 
-  let paginaAtual = typeof state[tv] === "string"
-    ? state[tv]
-    : state[tv].pagina;
+    // título da TV
+    let titulo = document.createElement("h2");
+    titulo.innerText = tv;
+    div.appendChild(titulo);
 
-  let match = paginaAtual?.match(/tela(\d)/);
-  let telaAtual = match ? match[1] : "1";
+    // container principal (imagem + botões)
+    let mainArea = document.createElement("div");
+    mainArea.className = "tv-content";
 
+    // -------------------------
+    // 📺 PREVIEW
+    // -------------------------
 
-  let iframe = document.createElement("iframe");
-  iframe.className = "tv-preview-frame";
-  iframe.src = "/viewer.html?tv=" + tv + "&preview=true";
-  
-  // -------------------------
-  // 🔘 BOTÕES
-  // -------------------------
+    let iframe = document.createElement("iframe");
+    iframe.className = "tv-preview-frame";
+    iframe.src = "/viewer.html?tv=" + tv + "&preview=true";
 
-  let botoes = document.createElement("div");
-  botoes.className = "tv-buttons";
+    // -------------------------
+    // 🔘 BOTÕES
+    // -------------------------
 
-  function criarBotao(nome, rota){
-    let btn = document.createElement("button");
-    btn.innerText = nome;
-    btn.className = "playlist-btn";
+    let botoes = document.createElement("div");
+    botoes.className = "tv-buttons";
 
-    btn.onclick = () => {
-      window.location.href = rota + "?tv=" + tv;
-    };
+    function criarBotao(nome, rota){
 
-    return btn;
-  }
+      let btn = document.createElement("button");
 
-  botoes.appendChild(criarBotao("Vídeos", "/playlists-videos.html"));
-  botoes.appendChild(criarBotao("Calendário Semanal", "/playlists-calendario.html"));
-  botoes.appendChild(criarBotao("Avisos", "/playlists-avisos.html"));
-  botoes.appendChild(criarBotao("Mapa do Campus", "/playlists-mapa.html"));
+      btn.innerText = nome;
+      btn.className = "playlist-btn";
 
-  // -------------------------
-  // 🔗 JUNTA TUDO
-  // -------------------------
+      btn.onclick = () => {
+        window.location.href = rota + "?tv=" + tv;
+      };
 
-content.appendChild(iframe);
-  content.appendChild(botoes);
+      return btn;
+    }
 
-  div.appendChild(content);
+    botoes.appendChild(criarBotao("Vídeos", "playlists/playlists-videos.html"));
+    botoes.appendChild(criarBotao("Calendário Semanal", "playlists/playlists-calendario.html"));
+    botoes.appendChild(criarBotao("Avisos", "playlists/playlists-avisos.html"));
+    botoes.appendChild(criarBotao("Mapa do Campus", "playlists/playlists-mapa.html"));
 
-  container.appendChild(div);
-}
+    // -------------------------
+    // 🔗 JUNTA TUDO
+    // -------------------------
+
+    mainArea.appendChild(iframe);
+    mainArea.appendChild(botoes);
+
+    div.appendChild(mainArea);
+
+    container.appendChild(div);
+
+  });
 }
 async function mudar(tv, pagina, intervalo){
 
@@ -141,7 +145,7 @@ async function mudar(tv, pagina, intervalo){
 
 }
 
-setInterval(carregar,10000);
+setInterval(carregar,180000); // atualiza a cada 3 minutos    
 carregar();
 
 </script>

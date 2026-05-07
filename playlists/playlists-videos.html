@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Playlist - Vídeos</title>
+
+<link rel="stylesheet" href="/playlists/style-playlists.css">
+
+</head>
+
+<body>
+
+<h1 class="titulosplaylists">Playlist de Vídeos</h1>
+
+<div id="info-tv"></div>
+
+<div id="lista-videos"></div>
+
+<button class="salvar-btn" onclick="salvarPlaylist()">
+Aplicar Playlist
+</button>
+
+<script>
+
+// ========================================
+// TV ATUAL
+// ========================================
+
+const params = new URLSearchParams(window.location.search);
+const tv = params.get("tv");
+
+document.getElementById("info-tv").innerText =
+"Configurando vídeos da " + tv;
+
+
+// ========================================
+// PLAYLIST PRONTA
+// ========================================
+
+const videosDisponiveis = [
+
+  {
+    titulo: "Vídeo Institucional",
+    iframe:  "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
+    thumb: "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
+    duracao: 60
+  },
+
+  {
+    titulo: "Vídeo Institucional",
+    iframe:  "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
+    thumb: "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
+    duracao: 60
+  }
+];
+
+// playlist selecionada
+let playlist = [];
+
+
+// ========================================
+// RENDERIZA VÍDEOS
+// ========================================
+
+function renderVideos(){
+
+  const lista = document.getElementById("lista-videos");
+
+  lista.innerHTML = "";
+
+  videosDisponiveis.forEach(video => {
+
+    let card = document.createElement("div");
+
+    card.className = "video-card";
+
+    card.innerHTML = `
+    
+      <img src="${video.thumb}" class="video-thumb">
+
+      <div class="video-info">
+
+        <h3>${video.titulo}</h3>
+
+        <button class="selecionar-btn">
+          Selecionar
+        </button>
+
+      </div>
+
+    `;
+
+    let btn = card.querySelector(".selecionar-btn");
+
+    btn.onclick = () => {
+
+      let existe =
+        playlist.find(v => v.iframe === video.iframe);
+
+      if(existe){
+
+        playlist =
+          playlist.filter(v => v.iframe !== video.iframe);
+
+        card.classList.remove("video-selecionado");
+
+        btn.innerText = "Selecionar";
+
+      }else{
+
+        playlist.push(video);
+
+        card.classList.add("video-selecionado");
+
+        btn.innerText = "Selecionado";
+      }
+    };
+
+    lista.appendChild(card);
+
+  });
+
+}
+
+
+// ========================================
+// SALVAR PLAYLIST
+// ========================================
+
+async function salvarPlaylist(){
+
+  if(playlist.length === 0){
+
+    alert("Selecione ao menos um vídeo");
+
+    return;
+  }
+
+  await fetch("/save-playlist", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+
+      tv: tv,
+
+      type: "videos",
+
+      items: playlist
+
+    })
+
+  });
+
+  // =========================
+  // MUDA ESTADO DA TV
+  // =========================
+
+  await fetch("/update", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+
+      tv: tv,
+
+      pagina: "videos",
+
+      intervalo: 0
+
+    })
+
+  });
+
+  alert("Playlist aplicada!");
+
+  window.location.href = "/controle.html";
+}
+renderVideos();
+</script>
+
+</body>
+</html>

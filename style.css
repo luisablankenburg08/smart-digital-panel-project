@@ -1,6 +1,6 @@
 body {
-  overflow: hidden;
   background-color: rgb(243, 233, 233);
+  margin: 0;
 }
 .tv{
   width: 40vw;
@@ -226,7 +226,6 @@ button{
   margin-left: 5vw;
   gap: 1vw;
 }
-/* CSS DA PÁGINA PLAYLIST-VIDEOS */
 
 .titulosplaylists {
   text-align: center;
@@ -235,39 +234,4 @@ button{
   padding: 10px;
   font-size: 16px;
   cursor: pointer;
-}
-
-.add-video {
-  margin-bottom: 20px;
-}
-
-.video-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px;
-  border: 1px solid #ccc;
-  margin-bottom: 5px;
-}
-
-.salvar-btn {
-  margin-top: 20px;
-  padding: 10px;
-  font-size: 16px;
-}
-
-/* CSS DA PÁGINA PLAYLIST-AVISOS */
-
-#aviso-texto {
-  display: flex;
-  resize: none; 
-  width: 50vw;
-  height: 50vh;
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 4px;
-  margin-left: 25vw;
-}
-
-#aviso-texto:focus {
-  outline: 3px #2f9e40 solid;
 }
