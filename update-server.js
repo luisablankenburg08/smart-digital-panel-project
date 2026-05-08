@@ -74,7 +74,7 @@ app.post("/register", (req, res) => {
     if (!state[tv]) {
 
       state[tv] = {
-        pagina: "layouts/tela1.html",
+        pagina: "layouts/tela2.html",
         intervalo: 2000
       }
 
@@ -96,7 +96,7 @@ app.post("/register", (req, res) => {
   let newTv = `tv${numero}`
 
   state[newTv] = {
-    pagina: "layouts/tela1.html",
+    pagina: "layouts/tela2.html",
     intervalo: 2000
   }
 
@@ -122,8 +122,9 @@ app.post("/update", (req, res) => {
   if (typeof state[tv] === "string") {
     state[tv] = {
       pagina: state[tv],
-      intervalo: 2000
-    }
+      intervalo: 2000,
+      refresh: Date.now()
+     }
   }
 
   // 🔥 mantém valores antigos se não vierem novos
@@ -225,3 +226,48 @@ app.post("/save-playlist", (req,res)=>{
 });
 
 app.use("/uploads", express.static("uploads"));
+
+//rota para aplicar em todas as telas
+app.post("/update-all", (req, res) => {
+
+  let { pagina, type, items, intervalo } = req.body;
+
+  let state = JSON.parse(
+    fs.readFileSync(STATE_FILE)
+  );
+
+  let playlists = readPlaylists();
+
+  // aplica em TODAS as TVs
+  Object.keys(state).forEach(tv => {
+
+    // atualiza tela atual
+    state[tv] = {
+      pagina,
+      intervalo: intervalo ?? 2000,
+      refresh: Date.now()
+    };
+
+    // garante estrutura
+    if(!playlists[tv]){
+      playlists[tv] = {};
+    }
+
+    // salva playlist da TV
+    playlists[tv][type] = [...items];
+  });
+
+  // salva state
+  fs.writeFileSync(
+    STATE_FILE,
+    JSON.stringify(state, null, 2)
+  );
+
+  // salva playlists
+  savePlaylists(playlists);
+
+  res.json({
+    ok: true
+  });
+
+});
