@@ -1,10 +1,15 @@
 {
-  "tv2": {
-    "pagina": "mapa",
+  "tv1": {
+    "pagina": "videos",
     "intervalo": 0
   },
-  "tv1": {
-    "pagina": "calendario",
-    "intervalo": 0
+  "tv-e3fabdfa-f5e1-4769-bd82-6314fe6c2f42": {
+    "pagina": "avisos",
+    "intervalo": 0,
+    "refresh": 1778269546181
+  },
+  "tv2": {
+    "pagina": "layouts/tela2.html",
+    "intervalo": 2000
   }
 }

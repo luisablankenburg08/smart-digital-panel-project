@@ -14,6 +14,7 @@ body {
   text-align: center; 
   color: #1c9230;
 }
+
 button{
   margin:5px;
   background-color: #2f9e40;
@@ -26,9 +27,7 @@ button{
   margin-top: 5vw;
   margin-left: 5vw;
 }
-.aplicar-btn:hover {
-  background-color: #45a049;
-}
+
 .details-block{
   margin:8px 0;
   padding:8px;
@@ -36,41 +35,6 @@ button{
   background:#fafafa;
   transition: all 0.3s ease;
 }
-.details-block summary{
-  font-weight:bold;
-  cursor:pointer;
-  user-select: none;
-  position: relative;
-  padding-left: 20px;
-  list-style: none; /* Remove ícone padrão */
-}
-.details-block summary::-webkit-details-marker,
-.details-block summary::marker {
-  display: none; /* Remove ícone padrão em navegadores modernos */
-}
-.details-block summary::before{
-  content: '▼';
-  position: absolute;
-  left: 0;
-  transition: transform 0.3s ease;
-  color: #1c9230; /* Verde dos títulos TV */
-}
-.details-block[open] summary::before{
-  content: '▶';
-  transform: rotate(0deg);
-}
-.details-block[open]{
-  background:#f0f8ff;
-  border-color:#007bff;
-}
-.control-row{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-  margin:4px 0;
-}
-
 
 .tv h2 {
   color: #1c9230;  /* Azul */

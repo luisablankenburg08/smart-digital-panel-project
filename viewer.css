@@ -1,0 +1,33 @@
+body{
+  margin:0;
+  overflow:hidden;
+  background:black;
+}
+
+#content{
+  width:100vw;
+  height:100vh;
+  display:none;
+}
+
+.aviso{
+  width:100%;
+  height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  font-size:4rem;
+  font-family:Arial;
+  background:#111;
+  text-align:center;
+  padding:40px;
+  box-sizing:border-box;
+}
+
+.imagemViewer{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:black;
+}
