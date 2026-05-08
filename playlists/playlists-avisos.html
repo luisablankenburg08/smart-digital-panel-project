@@ -3,20 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Avisos</title>
     <link rel="stylesheet" href="style-playlists.css">
 
 </head>
 <body>
-    <h2 class="titulosplaylists">PLAYLISTS - AVISOS</h2>
-    <textarea id="aviso-texto" placeholder="Digite a mensagem..."></textarea>
-    <button onclick="adicionarAviso()">
+  <h2 class="titulosplaylists">PLAYLISTS - AVISOS</h2>
+  <textarea id="aviso-texto" placeholder="Digite a mensagem..."></textarea>
+
+  
+  <div class="acoes-playlist">
+
+    <button
+      class="btn-playlist"
+      onclick="adicionarAviso()"
+    >
       Adicionar Aviso
     </button>
 
-    <button onclick="salvarPlaylist()">
+    <button
+      class="btn-playlist"
+      onclick="salvarPlaylist()"
+    >
       Aplicar Playlist
     </button>
+
+    <button
+      class="btn-playlist destaque"
+      onclick="aplicarTodas()"
+    >
+      Aplicar em todas as telas
+    </button>
+
+  </div>
 </body>
 
 <script>
@@ -26,6 +45,31 @@ let playlist = [];
 let params = new URLSearchParams(window.location.search);
 
 let tv = params.get("tv");
+
+
+async function aplicarTodas(){
+
+  await fetch("/update-all", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+
+      pagina: "avisos",
+      type: "avisos",
+      intervalo: 0,
+      items: playlist
+
+    })
+
+  });
+
+  alert("Aviso aplicado em todas as TVs");
+}
 
 // ========================================
 // Adiciona aviso
@@ -101,13 +145,14 @@ async function salvarPlaylist(){
 
     body: JSON.stringify({
 
-      tv: tv,
+    tv: tv,
 
-      pagina: "avisos",
+    pagina: "avisos",
 
-      intervalo: 0
+    intervalo: 0,
 
-    })
+
+  })
 
   });
 

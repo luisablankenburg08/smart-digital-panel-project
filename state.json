@@ -1,6 +1,10 @@
 {
-  "tv-ec738399-1859-4e14-9959-cbfc73f54313": {
-    "pagina": "avisos",
+  "tv2": {
+    "pagina": "mapa",
+    "intervalo": 0
+  },
+  "tv1": {
+    "pagina": "calendario",
     "intervalo": 0
   }
 }

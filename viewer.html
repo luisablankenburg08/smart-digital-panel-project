@@ -75,6 +75,11 @@ let ultimaPagina = null;
 let intervaloAtual = 2000;
 let modoAtual = "iframe";
 
+
+let ultimoConteudo = "";
+let carregandoConteudo = false;
+let ultimoRefresh = null;
+
 // timers
 let heartbeatInterval = null;
 let polling = null;
@@ -153,13 +158,17 @@ window.addEventListener("pagehide", desligar);
 window.addEventListener("unload", desligar);
 
 // =========================
-// 🎬 PLAYLIST IFRAME
+// PLAYLIST IFRAME
 // =========================
 
-async function mostrarConteudo(type){
+async function mostrarConteudo(type, refreshAtual){
+
+  if(carregandoConteudo) return;
+  carregandoConteudo = true;
 
   let frame = document.getElementById("frame");
   let content = document.getElementById("content");
+
 
   let res =
     await fetch(`/playlist?tv=${tvId}&type=${type}`);
@@ -168,7 +177,8 @@ async function mostrarConteudo(type){
 
   // pega apenas o primeiro item
   let item = items[0];
-
+  let conteudoAtual = JSON.stringify(items);
+  
   if(!item){
 
     frame.style.display = "none";
@@ -180,9 +190,21 @@ async function mostrarConteudo(type){
         Nenhum conteúdo cadastrado
       </div>
     `;
-
+    carregandoConteudo = false;
     return;
   }
+
+
+  if(
+    ultimoConteudo === conteudoAtual &&
+    ultimoRefresh === refreshAtual
+  ){
+      carregandoConteudo = false;
+      return;
+  }
+  
+  ultimoConteudo = conteudoAtual;
+  ultimoRefresh = refreshAtual;
 
   // =========================
   // VÍDEOS
@@ -195,6 +217,7 @@ async function mostrarConteudo(type){
 
     frame.src = item.iframe;
 
+    carregandoConteudo = false;
     return;
   }
 
@@ -212,7 +235,7 @@ async function mostrarConteudo(type){
         ${item.texto}
       </div>
     `;
-
+    carregandoConteudo = false;
     return;
   }
 
@@ -231,28 +254,33 @@ async function mostrarConteudo(type){
         class="imagemViewer"
       >
     `;
-
+    carregandoConteudo = false;
     return;
   }
 
-  // =========================
-  // CALENDÁRIO
-  // =========================
-  if(type === "calendario"){
+// =========================
+// CALENDÁRIO
+// =========================
+if(type === "calendario"){
 
     frame.style.display = "none";
 
     content.style.display = "block";
 
     content.innerHTML = `
-      <img
-        src="${item.src}"
-        class="imagemViewer"
-      >
+        <iframe
+            src="${item.src}"
+            style="
+                width:90vw;
+                height:90vh;
+                margin-left: 5vw;
+                margin-top: 5vh;
+            ">
+        </iframe>
     `;
-
+    carregandoConteudo = false;
     return;
-  }
+}
 }
 
 // =========================
@@ -297,66 +325,47 @@ async function carregar(){
     // =========================
     if(pagina && pagina.includes("avisos")){
 
-      if(modoAtual !== "avisos"){
+      modoAtual = "avisos";
 
-        modoAtual = "avisos";
-
-        mostrarConteudo("avisos");
-      }
-
-      return;
-    }
-
-    // =========================
-    // IMAGENS
-    // =========================
-    if(pagina && pagina.includes("imagens")){
-
-      if(modoAtual !== "imagens"){
-
-        modoAtual = "imagens";
-
-        mostrarConteudo("imagens");
-      }
-
+      mostrarConteudo("avisos",config.refresh);
+    
       return;
     }
 
     // =========================
     // VÍDEOS
     // =========================
-    if(pagina && pagina.includes("videos")){
+    if(pagina && pagina.includes("videos",)){
 
-      if(modoAtual !== "videos"){
+      modoAtual = "videos";
 
-        modoAtual = "videos";
-
-        mostrarConteudo("videos");
-      }
+      mostrarConteudo("videos",config.refresh);
 
       return;
     }
+
+    // =========================
+    // MAPA
+    // =========================
 
     if(pagina && pagina.includes("mapa")){
 
-      if(modoAtual !== "mapa"){
+      modoAtual = "mapa";
 
-        modoAtual = "mapa";
-
-        mostrarConteudo("mapa");
-      }
-
+      mostrarConteudo("mapa",config.refresh);
+      
       return;
     }
 
+    // =========================
+    // CALENDÁRIO
+    // =========================
+
     if(pagina && pagina.includes("calendario")){
 
-      if(modoAtual !== "calendario"){
+      modoAtual = "calendario";
 
-        modoAtual = "calendario";
-
-        mostrarConteudo("calendario");
-      }
+      mostrarConteudo("calendario",config.refresh);
 
       return;
     }

@@ -8,32 +8,73 @@
 </head>
 <body>
 
-<h2 class="titulosplaylists">
-  MAPA DO CAMPUS
-</h2>
+  <h2 class="titulosplaylists">
+    MAPA DO CAMPUS
+  </h2>
 
-<img
-  src="/layouts/mapa-floripa.jpg"
-  id="mapa-campus"
-  alt="Mapa do Campus"
->
-
-<div>
-
-  <button
-    class="salvar-btn"
-    onclick="salvarMapa()"
+  <img
+    src="/layouts/mapa-floripa.jpg"
+    id="mapa-campus"
+    alt="Mapa do Campus"
   >
-    Aplicar Mapa
-  </button>
 
-</div>
+  <div class="acoes-playlist">
+
+    <button
+      class="btn-playlist"
+      onclick="salvarMapa()"
+    >
+      Aplicar Mapa
+    </button>
+
+    <button
+      class="btn-playlist destaque"
+      onclick="aplicarTodas()"
+    >
+      Aplicar em todas as telas
+    </button>
+
+  </div>
 
 <script>
 
 let params = new URLSearchParams(window.location.search);
 
 let tv = params.get("tv");
+
+async function aplicarTodas(){
+
+  let playlist = [
+
+    {
+      src: "/layouts/mapa-floripa.jpg",
+      duracao: 60
+    }
+
+  ];
+
+  await fetch("/update-all", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+
+      pagina: "mapa",
+      type: "mapa",
+      intervalo: 0,
+      items: playlist
+
+    })
+
+  });
+
+  alert("Mapa aplicado em todas as TVs");
+}
+
 
 async function salvarMapa(){
 
@@ -78,13 +119,14 @@ async function salvarMapa(){
 
     body: JSON.stringify({
 
-      tv: tv,
+    tv: tv,
 
-      pagina: "mapa",
+    pagina: "mapa",
 
-      intervalo: 0
+    intervalo: 0,
 
-    })
+
+  })
 
   });
 

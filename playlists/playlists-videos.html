@@ -16,11 +16,56 @@
 
 <div id="lista-videos"></div>
 
-<button class="salvar-btn" onclick="salvarPlaylist()">
-Aplicar Playlist
-</button>
+<div class="acoes-playlist">
 
+  <button
+    class="btn-playlist"
+    onclick="salvarPlaylist()"
+  >
+    Aplicar Playlist
+  </button>
+
+  <button
+    class="btn-playlist destaque"
+    onclick="aplicarTodas()"
+  >
+    Aplicar em todas as telas
+  </button>
+
+</div>
 <script>
+
+async function aplicarTodas(){
+
+  if(playlist.length === 0){
+
+    alert("Selecione ao menos um vídeo");
+
+    return;
+  }
+
+  await fetch("/update-all", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+
+      pagina: "videos",
+      type: "videos",
+      intervalo: 0,
+      items: playlist
+
+    })
+
+  });
+
+  alert("Vídeos aplicados em todas as TVs");
+}
+
 
 // ========================================
 // TV ATUAL
@@ -170,13 +215,14 @@ async function salvarPlaylist(){
 
     body: JSON.stringify({
 
-      tv: tv,
+    tv: tv,
 
-      pagina: "videos",
+    pagina: "videos",
 
-      intervalo: 0
+    intervalo: 0,
 
-    })
+
+  })
 
   });
 
