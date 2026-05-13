@@ -1,23 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-
-<meta charset="UTF-8">
-<title>Painel</title>
-<link rel="stylesheet" href="style.css">
-
-
-</head>
-
-<body>
-
-<h1 class="h1painel">Painel de Controle</h1>
-
-<div id="tvs"></div>
-
-
-<script>
-
 let pendingSelections = {};
 
 async function carregar(){
@@ -148,8 +128,3 @@ async function mudar(tv, pagina, intervalo){
 
 setInterval(carregar,180000); // atualiza a cada 3 minutos    
 carregar();
-
-</script>
-
-</body>
-</html>
