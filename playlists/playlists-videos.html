@@ -10,7 +10,7 @@
 
 <body>
 
-<h1 class="titulosplaylists">Playlist de Vídeos</h1>
+<h1 class="titulosplaylists">Vídeos</h1>
 
 <div id="info-tv"></div>
 
@@ -85,23 +85,43 @@ document.getElementById("info-tv").innerText =
 const videosDisponiveis = [
 
   {
-    titulo: "Vídeo Institucional",
+    titulo: "Institucional do IFSC - REDE",
     iframe:  "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
     thumb: "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
     duracao: 60
   },
 
   {
-    titulo: "Vídeo Institucional",
-    iframe:  "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
-    thumb: "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
+    titulo: "Curso Sistemas para Internet",
+    iframe: "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1",
+    thumb: "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
+    duracao: 60
+  },
+
+  {
+    titulo: " Institucional do IFSC - Garopaba",
+    iframe:  "https://www.youtube.com/embed/ZjC2rCLbIVc?autoplay=1&mute=1",
+    thumb: "https://img.youtube.com/vi/ZjC2rCLbIVc/hqdefault.jpg",
+    duracao: 60
+  },
+
+ {
+    titulo: "SEPEI 2026 - Caçador",
+    iframe:  "https://www.youtube.com/embed/wbLtKq_WKRs?autoplay=1&mute=1",
+    thumb: "https://img.youtube.com/vi/wbLtKq_WKRs/hqdefault.jpg",
+    duracao: 60
+  },
+
+  {
+    titulo: "Curso Técnico em Informática",
+    iframe: "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1",
+    thumb: "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
     duracao: 60
   }
-];
+]
 
 // playlist selecionada
 let playlist = [];
-
 
 // ========================================
 // RENDERIZA VÍDEOS
@@ -110,13 +130,11 @@ let playlist = [];
 function renderVideos(){
 
   const lista = document.getElementById("lista-videos");
-
   lista.innerHTML = "";
 
   videosDisponiveis.forEach(video => {
 
     let card = document.createElement("div");
-
     card.className = "video-card";
 
     card.innerHTML = `
@@ -143,28 +161,19 @@ function renderVideos(){
         playlist.find(v => v.iframe === video.iframe);
 
       if(existe){
-
         playlist =
           playlist.filter(v => v.iframe !== video.iframe);
-
         card.classList.remove("video-selecionado");
-
         btn.innerText = "Selecionar";
 
       }else{
-
         playlist.push(video);
-
         card.classList.add("video-selecionado");
-
         btn.innerText = "Selecionado";
       }
     };
-
     lista.appendChild(card);
-
   });
-
 }
 
 
@@ -175,30 +184,21 @@ function renderVideos(){
 async function salvarPlaylist(){
 
   if(playlist.length === 0){
-
     alert("Selecione ao menos um vídeo");
-
     return;
   }
 
   await fetch("/save-playlist", {
 
     method: "POST",
-
     headers: {
       "Content-Type": "application/json"
     },
-
     body: JSON.stringify({
-
       tv: tv,
-
       type: "videos",
-
       items: playlist
-
     })
-
   });
 
   // =========================
@@ -208,27 +208,19 @@ async function salvarPlaylist(){
   await fetch("/update", {
 
     method: "POST",
-
     headers: {
       "Content-Type": "application/json"
     },
-
     body: JSON.stringify({
-
     tv: tv,
-
     pagina: "videos",
-
     intervalo: 0,
-
-
   })
-
   });
 
   alert("Playlist aplicada!");
 
-  window.location.href = "/controle.html";
+  window.location.href = "/controller.html";
 }
 renderVideos();
 </script>

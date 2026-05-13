@@ -1,11 +1,15 @@
 body {
   background-color: rgb(243, 233, 233);
-  margin: 0;
+  margin: 2vw;
   padding: 0;
 }
 
+.titulosplaylists {
+  font-size: 32px;
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+}
 /* CSS DA PÁGINA PLAYLIST-VIDEOS */
-
 
 #lista-videos{
   display:flex;
@@ -15,29 +19,31 @@ body {
 }
 
 .video-card{
-
   width:300px;
-
   background:#fff;
-
   border-radius:12px;
-
   overflow:hidden;
-
   box-shadow:0 2px 10px rgba(0,0,0,0.15);
-
-  transition:0.2s;
+  margin-left: 1vw;
 }
 
 .video-thumb{
-
   width:100%;
   display:block;
 }
 
 .video-info{
-
   padding:15px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+#info-tv {
+  font-size: 18px;
+  font-family: Arial, Helvetica, sans-serif;
+  text-transform: uppercase;
+  text-decoration: underline;
+  color: #2f9e40;
 }
 
 .selecionar-btn{
@@ -70,6 +76,8 @@ body {
   font-size: 16px;
   border-radius: 4px;
   margin-left: 25vw;
+  
+  
 }
 
 #aviso-texto:focus {

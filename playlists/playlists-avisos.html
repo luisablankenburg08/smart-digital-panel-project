@@ -1,165 +1,314 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avisos</title>
-    <link rel="stylesheet" href="style-playlists.css">
 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avisos</title>
+<link rel="stylesheet" href="style-avisos.css">
 </head>
+
 <body>
-  <h2 class="titulosplaylists">PLAYLISTS - AVISOS</h2>
-  <textarea id="aviso-texto" placeholder="Digite a mensagem..."></textarea>
 
-  
-  <div class="acoes-playlist">
+<h2 class="titulosplaylists">
+  Avisos
+</h2>
 
-    <button
-      class="btn-playlist"
-      onclick="adicionarAviso()"
-    >
-      Adicionar Aviso
-    </button>
+<div class="cards-avisos" id="cards-avisos"></div>
 
-    <button
-      class="btn-playlist"
-      onclick="salvarPlaylist()"
-    >
-      Aplicar Playlist
-    </button>
+<!-- NOVO AVISO -->
+<h3>Novo Aviso</h3>
 
-    <button
-      class="btn-playlist destaque"
-      onclick="aplicarTodas()"
-    >
-      Aplicar em todas as telas
-    </button>
+<textarea
+  id="aviso-texto"
+  placeholder="Digite a mensagem..."
+></textarea>
 
-  </div>
-</body>
+<button
+  class="btn-playlist"
+  onclick="adicionarAvisoPersonalizado()"
+>
+  Adicionar à Playlist
+</button>
+
+
+<!-- AÇÕES -->
+<div class="acoes-playlist">
+
+  <button
+    class="btn-playlist"
+    onclick="salvarPlaylist()"
+  >
+    Salvar Playlist
+  </button>
+
+  <button
+    class="btn-playlist destaque"
+    onclick="aplicarTV()"
+  >
+    Aplicar nesta TV
+  </button>
+
+  <button
+    class="btn-playlist destaque"
+    onclick="aplicarTodas()"
+  >
+    Aplicar em Todas
+  </button>
+
+</div>
 
 <script>
 
-let playlist = [];
-
-let params = new URLSearchParams(window.location.search);
-
+let params =
+  new URLSearchParams(window.location.search);
 let tv = params.get("tv");
+let avisos = [];
 
+// =====================================
+// AVISOS PRONTOS
+// =====================================
 
-async function aplicarTodas(){
+const avisosProntos = [
 
-  await fetch("/update-all", {
+  {
+    titulo:"Horários dos Treinos",
+    texto:
+      "Treinos de futsal: segundas e quartas às 18h.",
+    tipo:"pronto",
+    selecionado:false
+  },
 
-    method: "POST",
+  {
+    titulo:"Oportunidades IFSC",
+    texto:
+      "Inscrições abertas para bolsas e monitorias.",
+    tipo:"pronto",
+    selecionado:false
+  },
 
-    headers: {
-      "Content-Type": "application/json"
-    },
+  {
+    titulo:"Biblioteca",
+    texto:
+      "Renove seus livros pelo portal acadêmico.",
+    tipo:"pronto",
+    selecionado:false
+  }
 
-    body: JSON.stringify({
+];
 
-      pagina: "avisos",
-      type: "avisos",
-      intervalo: 0,
-      items: playlist
+// adiciona prontos
+avisos.push(...avisosProntos);
 
-    })
+// =====================================
+// RENDERIZA
+// =====================================
 
-  });
+function renderizarAvisos(){
 
-  alert("Aviso aplicado em todas as TVs");
+  let container =
+    document.getElementById("cards-avisos");
+
+  container.innerHTML = "";
+
+  // =========================
+  // PRONTOS
+  // =========================
+
+  container.innerHTML += `
+    <h3 class="secao-titulo">
+      Avisos Prontos
+    </h3>
+  `;
+
+  avisos
+    .filter(a=>a.tipo==="pronto")
+    .forEach((aviso,index)=>{
+
+      container.innerHTML += `
+
+        <div
+          class="
+            card-aviso
+            ${aviso.selecionado ? "selecionado" : ""}
+          "
+
+          onclick="toggleAviso(${index})"
+        >
+
+          <h3>${aviso.titulo}</h3>
+
+          <p>${aviso.texto}</p>
+
+        </div>
+      `;
+    });
+
+  // =========================
+  // PERSONALIZADOS
+  // =========================
+
+  let personalizados =
+    avisos.filter(a=>a.tipo==="personalizado");
+
+  if(personalizados.length > 0){
+
+    container.innerHTML += `
+      <h3 class="secao-titulo">
+        Novos Avisos
+      </h3>
+    `;
+
+    personalizados.forEach((aviso,index)=>{
+
+      let realIndex =
+        avisos.indexOf(aviso);
+
+      container.innerHTML += `
+
+        <div
+          class="
+            card-aviso
+            card-personalizado
+            ${aviso.selecionado ? "selecionado" : ""}
+          "
+
+          onclick="toggleAviso(${realIndex})"
+        >
+
+          <h3>${aviso.titulo}</h3>
+
+          <p>${aviso.texto}</p>
+
+        </div>
+      `;
+    });
+  }
 }
 
-// ========================================
-// Adiciona aviso
-// ========================================
+// =====================================
+// TOGGLE
+// =====================================
 
-function adicionarAviso(){
+function toggleAviso(index){
+  avisos[index].selecionado =
+    !avisos[index].selecionado;
+  renderizarAvisos();
+}
 
-  let texto =
-    document.getElementById("aviso-texto").value;
+// =====================================
+// ADICIONA PERSONALIZADO
+// =====================================
+
+function adicionarAvisoPersonalizado(){
+
+  let texto = document.getElementById("aviso-texto").value;
 
   if(!texto){
-
-    alert("Digite a mensagem do aviso");
-
+    alert("Digite um aviso");
     return;
   }
 
-  playlist.push({
-
-    texto: texto,
-
-    duracao: 10
-
+  avisos.push({
+    titulo:"Aviso Personalizado",
+    texto:texto,
+    tipo:"personalizado",
+    selecionado:true
   });
 
   document.getElementById("aviso-texto").value = "";
 
-  alert("Aviso adicionado à playlist");
+  renderizarAvisos();
 }
 
-// ========================================
-// Salvar playlist
-// ========================================
+// =====================================
+// PLAYLIST SELECIONADA
+// =====================================
 
-async function salvarPlaylist(){
+function obterSelecionados(){
+  return avisos.filter(a=>a.selecionado);
+}
 
-  if(playlist.length === 0){
+// =====================================
+// APLICAR TV
+// =====================================
 
-    alert("Nenhum aviso adicionado");
+async function aplicarTV(){
 
+  let selecionados = obterSelecionados();
+
+  if(selecionados.length === 0){
+    alert("Selecione ao menos um aviso");
     return;
   }
 
-  // salva playlist
+  // salva
   await fetch("/save-playlist", {
 
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json"
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
     },
-
-    body: JSON.stringify({
-
-      tv: tv,
-
-      type: "avisos",
-
-      items: playlist
-
+    body:JSON.stringify({
+      tv:tv,
+      type:"avisos",
+      items:selecionados
     })
-
   });
 
-  // ativa viewer
+  // ativa
   await fetch("/update", {
-
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json"
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
     },
-
-    body: JSON.stringify({
-
-    tv: tv,
-
-    pagina: "avisos",
-
-    intervalo: 0,
-
-
-  })
-
+    body:JSON.stringify({
+      tv:tv,
+      pagina:"modo:avisos",
+      intervalo:0
+    })
   });
 
-  alert("Avisos enviados!");
+  alert("Avisos aplicados");
 
-  window.location.href = "/controle.html";
+  window.location.href = "/controller.html";
 }
 
+// =====================================
+// APLICAR TODAS
+// =====================================
+
+async function aplicarTodas(){
+
+  let selecionados = obterSelecionados();
+
+  if(selecionados.length === 0){
+    alert("Selecione ao menos um aviso");
+    return;
+  }
+
+  await fetch("/update-all", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      pagina:"modo:avisos",
+      type:"avisos",
+      intervalo:0,
+      items:selecionados
+    })
+  });
+
+  alert("Avisos aplicados em todas");
+
+  window.location.href = "/controller.html";
+}
+
+renderizarAvisos();
+
 </script>
+
+</body>
 </html>
