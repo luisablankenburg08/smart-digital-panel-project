@@ -215,8 +215,9 @@ if(type === "calendario"){
         <iframe
             src="${item.src}"
             style="
-                width:100vw;
+                width:80vw;
                 height:100vh;
+                margin-left: 10vw;
             ">
         </iframe>
     `;

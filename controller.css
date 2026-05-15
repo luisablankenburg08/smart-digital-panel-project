@@ -12,7 +12,7 @@ body {
 
 .h1painel {
   text-align: center; 
-  color: #1c9230;
+  color: #6abf59;
 }
 
 button{
@@ -22,23 +22,16 @@ button{
 
 .mensagemtv{
   font-size: 24px;
-  color: #1c9230;
+  color: #1c7f13;
   font-weight: bold;
   margin-top: 5vw;
   margin-left: 5vw;
 }
 
-.details-block{
-  margin:8px 0;
-  padding:8px;
-  border:1px solid #ddd;
-  background:#fafafa;
-  transition: all 0.3s ease;
-}
-
 .tv h2 {
-  color: #1c9230;  /* Azul */
-  font-size:25px;
+  color: #6abf59;  /* Azul */
+  font-size:1.5vw;
+  text-decoration: underline;
   font-weight: bold;
   margin-bottom: 10px;
   text-transform: uppercase;  /* Ex: "TV1" em maiúsculo */
@@ -46,7 +39,7 @@ button{
 
 
 .aplicar-btn {
-  background-color: #4CAF50; /* Verde mais escuro */
+  background-color: #439f36; /* Verde mais escuro */
   width: 10vw;
   height: 5vh;
   border: none;
@@ -55,6 +48,56 @@ button{
   border-radius: 4px;
   margin-left: 45vw;
 }
+
+/* CSS DE PLAYLISTS E CAMPO DAS TVS */
+
+.tv-content {
+  height: 20vw;
+  display: flex;
+  gap: 2vw;
+  
+}
+
+.tv-preview-frame {
+  width: 20vw;
+  height: 14vw;
+  border: 2px solid #000;
+  margin-top: 3vh;
+  margin-left: 2vw ;
+}
+
+.tv-buttons {
+  width: 8vw;
+  height: 1vw;
+  float: right;
+  display: flex;
+  flex-direction: column;
+  margin-left: 5vw;
+  gap: 1vw;
+}
+
+.titulosplaylists {
+  text-align: center;
+}
+.playlist-btn {
+  padding: 0.3vw;
+  font-size: 0.9vw;
+  border-radius: 0.7vw;
+  color:white;
+  font-weight:bold;
+  cursor: pointer;
+  border-color: #6abf59;
+  background-color: #6abf59;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  
+}
+.playlist-btn:hover {
+  background-color: #90df7c;
+  transform:scale(1.05);
+}
+
+/* CSS UTILIZADO NA VERSÃO 1
 
 .tela-select {
   padding: 8px;
@@ -126,13 +169,18 @@ button{
 
 .figura {
   display: flex;
-  justify-content: center; /* Centraliza horizontalmente */
-  align-items: center;     /* Centraliza verticalmente */
-  height: 100vh;           /* Altura total da tela */
+  justify-content: center; 
+  align-items: center;    
+  height: 100vh;  }      
+  
+.details-block{
+margin:8px 0;
+padding:8px;
+border:1px solid #ddd;
+background:#fafafa;
+transition: all 0.3s ease;
 }
 
-
-/* CSS DOS CAMPOS DE UPDATE */
 
 .update-group{
   display: flex;
@@ -160,39 +208,3 @@ button{
   color: #1c5f9a;
   margin-top: 8px;
 }
-
-/* CSS DE PLAYLISTS E CAMPO DAS TVS */
-
-.tv-content {
-  height: 17vw;
-  display: flex;
-  gap: 2vw;
-  
-}
-
-.tv-preview-frame {
-  width: 20vw;
-  height: 14vw;
-  border: 2px solid #000;
-  
-}
-
-.tv-buttons {
-  width: 8vw;
-  height: 1vw;
-  float: right;
-  display: flex;
-  flex-direction: column;
-  margin-left: 5vw;
-  gap: 1vw;
-}
-
-.titulosplaylists {
-  text-align: center;
-}
-.playlist-btn {
-  padding: 10px;
-  font-size: 16px;
-  cursor: pointer;
-}
-

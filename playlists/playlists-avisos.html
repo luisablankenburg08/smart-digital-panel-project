@@ -7,15 +7,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avisos</title>
 <link rel="stylesheet" href="style-avisos.css">
+<link rel="icon" type="image/png" href="https://www.ifsc.edu.br/o/ifsc-internet-lf6_2-theme/images/favicon.ico">
 </head>
 
 <body>
-
+<button class="btn-voltar" onclick="voltarMenu()">Voltar</button>
 <h2 class="titulosplaylists">
   Avisos
 </h2>
-
-<div class="cards-avisos" id="cards-avisos"></div>
 
 <!-- NOVO AVISO -->
 <h3>Novo Aviso</h3>
@@ -32,7 +31,7 @@
   Adicionar à Playlist
 </button>
 
-
+<div class="cards-avisos" id="cards-avisos"></div>
 <!-- AÇÕES -->
 <div class="acoes-playlist">
 
@@ -61,6 +60,9 @@
 
 <script>
 
+function voltarMenu() {
+  window.location.href = "/controller.html"; }
+
 let params =
   new URLSearchParams(window.location.search);
 let tv = params.get("tv");
@@ -75,11 +77,18 @@ const avisosProntos = [
   {
     titulo:"Horários dos Treinos",
     texto:
-      "Treinos de futsal: segundas e quartas às 18h.",
+      "Treinos de handebol: quartas às 13h30h e sexta às 8h.",
     tipo:"pronto",
     selecionado:false
   },
 
+ {
+    titulo:"Mensagem Padrão",
+    texto:
+      "Smart Digital Panel Project",
+    tipo:"pronto",
+    selecionado:false
+  },
   {
     titulo:"Oportunidades IFSC",
     texto:
@@ -112,15 +121,7 @@ function renderizarAvisos(){
 
   container.innerHTML = "";
 
-  // =========================
-  // PRONTOS
-  // =========================
 
-  container.innerHTML += `
-    <h3 class="secao-titulo">
-      Avisos Prontos
-    </h3>
-  `;
 
   avisos
     .filter(a=>a.tipo==="pronto")

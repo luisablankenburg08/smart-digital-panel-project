@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa do Campus</title>
     <link rel="stylesheet" href="style-playlists.css">
+    <link rel="icon" type="image/png" href="https://www.ifsc.edu.br/o/ifsc-internet-lf6_2-theme/images/favicon.ico">
 </head>
 <body>
-
-  <h2 class="titulosplaylists"> Mapa do Campus </h2>
+  <button class="btn-voltar" onclick="voltarMenu()">Voltar</button>
+  <h2 class="titulosplaylists"> Mapa do Campus (Floripa) </h2>
 
   <img
-    src="/playlists/mapa-rede-ifsc.jpg"
+    src="/playlists/mapa-floripa.jpg"
     id="mapa-campus"
     alt="Mapa do Campus"
   >
@@ -40,36 +41,32 @@ let params = new URLSearchParams(window.location.search);
 
 let tv = params.get("tv");
 
+
+function voltarMenu() {
+  window.location.href = "/controller.html"; }
+
 async function aplicarTodas(){
 
   let playlist = [
-
     {
-      src: "/playlists/mapa-rede-ifsc.jpg",
+      src: "/playlists/mapa-floripa.jpg",
       duracao: 60
     }
-
   ];
 
   await fetch("/update-all", {
 
     method: "POST",
-
     headers: {
       "Content-Type": "application/json"
     },
-
     body: JSON.stringify({
-
       pagina: "mapa",
       type: "mapa",
       intervalo: 0,
       items: playlist
-
     })
-
   });
-
   alert("Mapa aplicado em todas as TVs");
 }
 
@@ -77,11 +74,9 @@ async function aplicarTodas(){
 async function salvarMapa(){
 
   let playlist = [
-
     {
-      src: "/playlists/mapa-rede-ifsc.jpg",
+      src: "/playlists/mapa-floripa.jpg",
       duracao: 60
-
     }
   ];
 
@@ -89,50 +84,33 @@ async function salvarMapa(){
   await fetch("/save-playlist", {
 
     method: "POST",
-
     headers: {
       "Content-Type": "application/json"
     },
-
     body: JSON.stringify({
-
       tv: tv,
-
       type: "mapa",
-
       items: playlist
-
     })
-
   });
 
   // muda viewer
   await fetch("/update", {
 
     method: "POST",
-
     headers: {
       "Content-Type": "application/json"
     },
-
     body: JSON.stringify({
-
     tv: tv,
-
     pagina: "mapa",
-
     intervalo: 0,
-
-
   })
-
   });
 
   alert("Mapa enviado!");
-
   window.location.href = "/controller.html";
 }
-
 </script>
 
 </body>

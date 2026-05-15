@@ -98,6 +98,7 @@ async function carregar(){
     botoes.appendChild(criarBotao("Calendário Semanal", "playlists/playlists-calendario.html"));
     botoes.appendChild(criarBotao("Avisos", "playlists/playlists-avisos.html"));
     botoes.appendChild(criarBotao("Mapa do Campus", "playlists/playlists-mapa.html"));
+    botoes.appendChild(criarBotao("Ensalamento", "playlists/playlists-ensalamento.html"));
 
     // -------------------------
     // 🔗 JUNTA TUDO

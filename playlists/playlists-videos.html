@@ -2,14 +2,15 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Playlist - Vídeos</title>
+<title>Vídeos</title>
 
 <link rel="stylesheet" href="/playlists/style-playlists.css">
+<link rel="icon" type="image/png" href="https://www.ifsc.edu.br/o/ifsc-internet-lf6_2-theme/images/favicon.ico">
 
 </head>
 
 <body>
-
+<button class="btn-voltar" onclick="voltarMenu()">Voltar</button>
 <h1 class="titulosplaylists">Vídeos</h1>
 
 <div id="info-tv"></div>
@@ -34,6 +35,9 @@
 
 </div>
 <script>
+
+function voltarMenu() {
+  window.location.href = "/controller.html"; }
 
 async function aplicarTodas(){
 

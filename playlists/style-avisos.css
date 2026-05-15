@@ -57,17 +57,33 @@ textarea{
   color:white;
   font-size:15px;
   transition:0.2s;
+  margin-bottom: 1vw;
 }
 
 .btn-playlist:hover{
   opacity:0.9;
 }
 
+.btn-voltar {
+  padding:14px 24px;
+  border:none;
+  border-radius:12px;
+  background:#43a047;
+  color:white;
+  font-size:1rem;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.2s;
+}
+.btn-voltar:hover{
+  opacity:0.9;
+}
 .acoes-playlist{
   display:flex;
   gap:15px;
   flex-wrap:wrap;
   margin-top:20px;
+
 }
 
 .destaque{

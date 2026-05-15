@@ -1,10 +1,6 @@
 {
-  "tv1": {
-    "pagina": "modo:avisos",
-    "intervalo": 0
-  },
   "tv2": {
-    "pagina": "layouts/tela2.html",
-    "intervalo": 2000
+    "pagina": "mapa",
+    "intervalo": 0
   }
 }

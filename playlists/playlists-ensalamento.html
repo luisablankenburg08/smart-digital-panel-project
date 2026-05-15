@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ensalamento 2026</title>
+    <link rel="stylesheet" href="style-playlists.css">
+    <link rel="icon" type="image/png" href="https://www.ifsc.edu.br/o/ifsc-internet-lf6_2-theme/images/favicon.ico">
+</head>
+
+<body>
+    <button class="btn-voltar" onclick="voltarMenu()">Voltar</button>
+    <h2 class="titulosplaylists">Ensalamento 2026</h2>
+<div> 
+    <iframe 
+        id="ensalamento" 
+        src="https://ifscgaropaba.edupage.org/timetable/" >
+    </iframe>
+</div>
+
+<div>
+    <button class="btn-playlist" onclick="salvarCalendario()">Aplicar e Salvar</button>
+    <button class="btn-playlist destaque" onclick="aplicarTodas()">Aplicar em todas as telas </button>
+
+    
+</div>
+<script>
+    
+function voltarMenu() {
+  window.location.href = "/controller.html"; }
+
+</script>
+</body>
+</html>
