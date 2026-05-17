@@ -59,9 +59,10 @@ button{
 }
 
 .tv-preview-frame {
+  display: flex;
   width: 20vw;
   height: 14vw;
-  border: 2px solid #000;
+  border: 0.2vw solid #000;
   margin-top: 3vh;
   margin-left: 2vw ;
 }

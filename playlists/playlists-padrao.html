@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modo Padrão</title>
+<link rel="stylesheet" href="style-avisos.css">
+<link rel="icon" type="image/png" href="https://www.ifsc.edu.br/o/ifsc-internet-lf6_2-theme/images/favicon.ico">
+</head>
+
+<style>
+body{
+  font-family: Arial;
+  padding:20px;
+}
+
+h1{
+  margin-bottom:10px;
+}
+
+.container{
+  display:flex;
+  gap:20px;
+}
+
+.lista, .playlist{
+  width:50%;
+}
+
+.card{
+  background:#eee;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.item-playlist{
+  background:#dfe6e9;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+  cursor:grab;
+}
+
+.item-playlist.drag-over{
+  border:2px dashed #000;
+}
+
+button{
+  margin-top:10px;
+  padding:10px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<button onclick="voltar()">⬅ Voltar</button>
+
+<h1>Modo Padrão (Playlist Inteligente)</h1>
+
+<div class="container">
+
+  <!-- ITENS DISPONÍVEIS -->
+  <div class="lista">
+    <h2>Adicionar Conteúdo</h2>
+
+    <div id="videos"></div>
+    <div id="avisos"></div>
+    <div id="mapa"></div>
+
+  </div>
+
+  <!-- PLAYLIST -->
+  <div class="playlist">
+    <h2>Ordem de Exibição</h2>
+    <div id="playlist-container"></div>
+
+    <button onclick="salvar()">💾 Salvar</button>
+    <button onclick="aplicar()">📺 Aplicar na TV</button>
+  </div>
+
+</div>
+
+<script>
+
+// =========================
+// CONFIG
+// =========================
+const params = new URLSearchParams(window.location.search);
+const tv = params.get("tv");
+
+let playlist = [];
+
+// =========================
+// VOLTAR
+// =========================
+function voltar(){
+  window.location.href = "/controller.html";
+}
+
+// =========================
+// CARREGAR ITENS DISPONÍVEIS
+// =========================
+async function carregarDisponiveis(){
+
+  // vídeos
+  let resV = await fetch(`/playlist?tv=${tv}&type=videos`);
+  let videos = await resV.json();
+
+  let divV = document.getElementById("videos");
+  divV.innerHTML = "<h3>Vídeos</h3>";
+
+  videos.forEach(v => {
+    let card = document.createElement("div");
+    card.className = "card";
+    card.innerText = v.titulo;
+
+    card.onclick = () => {
+      playlist.push({...v, tipo:"videos"});
+      renderPlaylist();
+    };
+
+    divV.appendChild(card);
+  });
+
+  // avisos
+  let resA = await fetch(`/playlist?tv=${tv}&type=avisos`);
+  let avisos = await resA.json();
+
+  let divA = document.getElementById("avisos");
+  divA.innerHTML = "<h3>Avisos</h3>";
+
+  avisos.forEach(a => {
+    let card = document.createElement("div");
+    card.className = "card";
+    card.innerText = a.texto;
+
+    card.onclick = () => {
+      playlist.push({...a, tipo:"avisos"});
+      renderPlaylist();
+    };
+
+    divA.appendChild(card);
+  });
+
+  // mapa
+  let resM = await fetch(`/playlist?tv=${tv}&type=mapa`);
+  let mapas = await resM.json();
+
+  let divM = document.getElementById("mapa");
+  divM.innerHTML = "<h3>Mapa</h3>";
+
+  mapas.forEach(m => {
+    let card = document.createElement("div");
+    card.className = "card";
+    card.innerText = "Mapa";
+
+    card.onclick = () => {
+      playlist.push({...m, tipo:"mapa"});
+      renderPlaylist();
+    };
+
+    divM.appendChild(card);
+  });
+}
+
+// =========================
+// RENDER PLAYLIST
+// =========================
+function renderPlaylist(){
+
+  const container = document.getElementById("playlist-container");
+  container.innerHTML = "";
+
+  playlist.forEach((item, index) => {
+
+    let div = document.createElement("div");
+    div.className = "item-playlist";
+    div.draggable = true;
+    div.dataset.index = index;
+
+    div.innerHTML = `
+      <strong>${item.tipo.toUpperCase()}</strong>
+      - ${item.titulo || item.texto || "Mapa"}
+      <button onclick="remover(${index})">❌</button>
+    `;
+
+    // drag
+    div.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", index);
+    });
+
+    div.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      div.classList.add("drag-over");
+    });
+
+    div.addEventListener("dragleave", () => {
+      div.classList.remove("drag-over");
+    });
+
+    div.addEventListener("drop", (e) => {
+
+      e.preventDefault();
+
+      let from = e.dataTransfer.getData("text/plain");
+      let to = div.dataset.index;
+
+      mover(from, to);
+    });
+
+    container.appendChild(div);
+  });
+}
+
+// =========================
+// MOVER ITEM
+// =========================
+function mover(from, to){
+
+  from = parseInt(from);
+  to = parseInt(to);
+
+  const item = playlist.splice(from, 1)[0];
+  playlist.splice(to, 0, item);
+
+  renderPlaylist();
+}
+
+// =========================
+// REMOVER
+// =========================
+function remover(index){
+  playlist.splice(index,1);
+  renderPlaylist();
+}
+
+// =========================
+// SALVAR
+// =========================
+async function salvar(){
+
+  await fetch("/save-playlist", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      tv: tv,
+      type: "padrao",
+      items: playlist
+    })
+  });
+
+  alert("Playlist salva!");
+}
+
+// =========================
+// APLICAR
+// =========================
+async function aplicar(){
+
+  await salvar();
+
+  await fetch("/update", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      tv: tv,
+      pagina: "modo:padrao",
+      intervalo: 0
+    })
+  });
+
+  alert("Modo padrão ativado!");
+  window.location.href = "/controller.html";
+}
+
+// =========================
+// INIT
+// =========================
+carregarDisponiveis();
+
+</script>
+
+</body>
+</html>

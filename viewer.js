@@ -25,8 +25,134 @@ let ultimoRefresh = null;
 let heartbeatInterval = null;
 let polling = null;
 
+// rodar playlist padrão
+let playlistIndex = 0;
+let playlistCache = [];
+let playlistTimer = null;
 
 
+async function rodarPlaylist(tipo){
+
+  if(carregandoConteudo) return;
+
+  let res = await fetch(`/playlist?tv=${tvId}&type=${tipo}`);
+  let items = await res.json();
+
+  if(!items || items.length === 0){
+    return;
+  }
+
+  playlistCache = items;
+
+  let item = items[playlistIndex];
+
+  mostrarItemPlaylist(tipo, item);
+
+  // próximo
+  playlistIndex = (playlistIndex + 1) % items.length;
+}
+
+function mostrarItemPlaylist(tipo, item){
+
+  let frame = document.getElementById("frame");
+  let content = document.getElementById("content");
+
+  if(playlistTimer) clearTimeout(playlistTimer);
+
+  // =========================
+  // VÍDEO
+  // =========================
+  if(tipo === "videos"){
+
+    frame.style.display = "block";
+    content.style.display = "none";
+
+    frame.src = item.iframe;
+
+    playlistTimer = setTimeout(() => {
+      rodarPlaylist("videos");
+    }, item.duracao * 1000 || 60000);
+
+    return;
+  }
+
+  // =========================
+  // AVISO
+  // =========================
+  if(tipo === "avisos"){
+
+    frame.style.display = "none";
+    content.style.display = "block";
+
+    content.innerHTML = `
+      <div class="aviso">
+        ${item.texto}
+      </div>
+    `;
+
+    playlistTimer = setTimeout(() => {
+      rodarPlaylist("avisos");
+    }, 5000);
+
+    return;
+  }
+
+  // =========================
+  // MAPA
+  // =========================
+  if(tipo === "mapa"){
+
+    frame.style.display = "none";
+    content.style.display = "block";
+
+    content.innerHTML = `
+      <img src="${item.src}" class="imagemViewer">
+    `;
+
+    playlistTimer = setTimeout(() => {
+      rodarPlaylist("mapa");
+    }, 10000);
+
+    return;
+  }
+}
+
+async function rodarModoPadrao(){
+
+  let res = await fetch(`/playlist?tv=${tvId}&type=padrao`);
+  let items = await res.json();
+
+  if(!items || items.length === 0){
+    return;
+  }
+
+  let item = items[playlistIndex];
+
+  mostrarItemPlaylist(item.tipo, item);
+
+  playlistIndex = (playlistIndex + 1) % items.length;
+
+  // ⏱️ tempo automático
+  let tempo = 5000;
+
+  if(item.tipo === "videos"){
+    tempo = item.duracao * 1000 || 60000;
+  }
+
+  if(item.tipo === "mapa"){
+    tempo = 10000;
+  }
+
+  if(item.tipo === "avisos"){
+    tempo = 5000;
+  }
+
+  if(playlistTimer) clearTimeout(playlistTimer);
+
+  playlistTimer = setTimeout(() => {
+    rodarModoPadrao();
+  }, tempo);
+}
 // =========================
 // REGISTRO
 // =========================
@@ -97,7 +223,96 @@ function desligar(){
 window.addEventListener("beforeunload", desligar);
 window.addEventListener("pagehide", desligar);
 window.addEventListener("unload", desligar);
+// =========================
+// ENSALAMENTO
+// =========================
 
+async function carregarEnsalamento() {
+
+  const container = document.getElementById("content");
+
+  container.innerHTML = "<h1>Carregando ensalamento...</h1>";
+
+  try {
+
+    const res = await fetch("/api/ensalamento");
+
+    const dados = await res.json();
+
+    renderTabela(dados);
+
+  } catch (e) {
+
+    console.error(e);
+
+    container.innerHTML = "<h1>Erro ao carregar ensalamento</h1>";
+  }
+}
+
+function montarGrade(data){
+
+  const grid = [];
+
+  data.linhas.forEach((linha, i) => {
+
+    if(!grid[i]) grid[i] = [];
+
+    let col = 0;
+
+    linha.forEach(cell => {
+
+      // encontra próxima coluna livre
+      while(grid[i][col]) col++;
+
+      for(let r = 0; r < cell.rowspan; r++){
+        for(let c = 0; c < cell.colspan; c++){
+
+          if(!grid[i + r]) grid[i + r] = [];
+
+          grid[i + r][col + c] = cell.texto;
+
+        }
+      }
+
+      col++;
+    });
+
+  });
+
+  return grid;
+}
+
+function renderTabela(data){
+
+  const container = document.getElementById("content");
+
+  const grid = montarGrade(data);
+
+  let html = `<div class="tabela">`;
+
+  // cabeçalho
+  html += `<div class="linha">`;
+  data.cabecalho.forEach(c => {
+    html += `<div class="cell header">${c}</div>`;
+  });
+  html += `</div>`;
+
+  // linhas
+  grid.forEach(row => {
+
+    html += `<div class="linha">`;
+
+    row.forEach(cell => {
+      html += `<div class="cell">${cell || ""}</div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+
+  container.innerHTML = html;
+}
 // =========================
 // PLAYLIST IFRAME
 // =========================
@@ -134,7 +349,6 @@ async function mostrarConteudo(type, refreshAtual){
     carregandoConteudo = false;
     return;
   }
-
 
   if(
     ultimoConteudo === conteudoAtual &&
@@ -224,6 +438,19 @@ if(type === "calendario"){
     carregandoConteudo = false;
     return;
 }
+// =========================
+// ENSALAMENTO
+// =========================
+if(type === "ensalamento"){
+
+  frame.style.display = "none";
+  content.style.display = "block";
+
+  carregarEnsalamento();
+
+  carregandoConteudo = false;
+  return;
+}
 }
 
 // =========================
@@ -263,6 +490,17 @@ async function carregar(){
     let content =
       document.getElementById("content");
 
+
+    if(pagina && pagina.includes("padrao")){
+
+      if(modoAtual !== "padrao"){
+        playlistIndex = 0;
+        rodarModoPadrao();
+      }
+
+      modoAtual = "padrao";
+      return;
+      }
     // =========================
     // AVISOS
     // =========================
@@ -312,7 +550,29 @@ async function carregar(){
 
       return;
     }
+    // =========================
+    // ENSALAMENTO
+    // =========================
+    if(pagina && pagina.includes("ensalamento")){
 
+      modoAtual = "ensalamento";
+
+      mostrarConteudo("ensalamento", config.refresh);
+
+      return;
+    }
+
+    // =========================
+    // MODO PADRÃO
+    // =========================
+    if(pagina && pagina.includes("padrao")){
+
+      modoAtual = "padrao";
+
+      rodarModoPadrao();
+
+      return;
+    }
     // =========================
     // IFRAME NORMAL
     // =========================

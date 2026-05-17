@@ -66,7 +66,7 @@ async function carregar(){
     mainArea.className = "tv-content";
 
     // -------------------------
-    // 📺 PREVIEW
+    // PREVIEW
     // -------------------------
 
     let iframe = document.createElement("iframe");
@@ -74,7 +74,7 @@ async function carregar(){
     iframe.src = "/viewer.html?tv=" + tv + "&preview=true";
 
     // -------------------------
-    // 🔘 BOTÕES
+    // BOTÕES
     // -------------------------
 
     let botoes = document.createElement("div");
@@ -95,10 +95,10 @@ async function carregar(){
     }
 
     botoes.appendChild(criarBotao("Vídeos", "playlists/playlists-videos.html"));
-    botoes.appendChild(criarBotao("Calendário Semanal", "playlists/playlists-calendario.html"));
     botoes.appendChild(criarBotao("Avisos", "playlists/playlists-avisos.html"));
     botoes.appendChild(criarBotao("Mapa do Campus", "playlists/playlists-mapa.html"));
     botoes.appendChild(criarBotao("Ensalamento", "playlists/playlists-ensalamento.html"));
+    botoes.appendChild(criarBotao("Modo Padrão", "playlists/playlists-padrao.html"));
 
     // -------------------------
     // 🔗 JUNTA TUDO

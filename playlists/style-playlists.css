@@ -86,14 +86,11 @@ body {
   font-size: 16px;
   border-radius: 4px;
   margin-left: 25vw;
-  
-  
 }
 
 #aviso-texto:focus {
   outline: 3px #2f9e40 solid;
 }
-
 #mapa-campus {
     width: 68vw;
     height: 90vh;
@@ -146,10 +143,22 @@ body {
 }
 
 .btn-playlist.destaque{
-    background:#1e88e5;
+    background:#003049;
 }
 
 #ensalamento {
   width: 90vw;
   height: 90vh;
+}
+
+.item-playlist{
+  padding: 10px;
+  margin: 5px;
+  background: #eee;
+  cursor: grab;
+  border-radius: 8px;
+}
+
+.item-playlist.drag-over{
+  border: 2px dashed #333;
 }

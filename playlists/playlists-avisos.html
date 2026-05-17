@@ -111,6 +111,49 @@ const avisosProntos = [
 avisos.push(...avisosProntos);
 
 // =====================================
+// CARREGA AVISOS SALVOS
+// =====================================
+
+function avisoJaExiste(novoAviso){
+  return avisos.some(aviso =>
+    aviso.titulo === novoAviso.titulo &&
+    aviso.texto === novoAviso.texto
+  );
+}
+
+async function carregarAvisos(){
+  if(!tv){
+    renderizarAvisos();
+    return;
+  }
+
+  try {
+    let res = await fetch(`/playlist?tv=${tv}&type=avisos`);
+
+    if(res.ok){
+      let items = await res.json();
+
+      if(Array.isArray(items)){
+        items.forEach(item => {
+          if(!avisoJaExiste(item)){
+            avisos.push({
+              titulo: item.titulo || "Aviso Personalizado",
+              texto: item.texto || "",
+              tipo: item.tipo || "personalizado",
+              selecionado: false
+            });
+          }
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Erro ao carregar avisos salvos:", error);
+  }
+
+  renderizarAvisos();
+}
+
+// =====================================
 // RENDERIZA
 // =====================================
 
@@ -120,8 +163,6 @@ function renderizarAvisos(){
     document.getElementById("cards-avisos");
 
   container.innerHTML = "";
-
-
 
   avisos
     .filter(a=>a.tipo==="pronto")
@@ -134,12 +175,9 @@ function renderizarAvisos(){
             card-aviso
             ${aviso.selecionado ? "selecionado" : ""}
           "
-
           onclick="toggleAviso(${index})"
         >
-
           <h3>${aviso.titulo}</h3>
-
           <p>${aviso.texto}</p>
 
         </div>
@@ -155,12 +193,6 @@ function renderizarAvisos(){
 
   if(personalizados.length > 0){
 
-    container.innerHTML += `
-      <h3 class="secao-titulo">
-        Novos Avisos
-      </h3>
-    `;
-
     personalizados.forEach((aviso,index)=>{
 
       let realIndex =
@@ -174,12 +206,9 @@ function renderizarAvisos(){
             card-personalizado
             ${aviso.selecionado ? "selecionado" : ""}
           "
-
           onclick="toggleAviso(${realIndex})"
         >
-
           <h3>${aviso.titulo}</h3>
-
           <p>${aviso.texto}</p>
 
         </div>
@@ -306,8 +335,40 @@ async function aplicarTodas(){
 
   window.location.href = "/controller.html";
 }
+// =====================================
+// APLICAR TODAS
+// =====================================
 
-renderizarAvisos();
+async function salvarPlaylist(){
+
+  let personalizados = avisos.filter(a => a.tipo === "personalizado");
+
+  if(personalizados.length === 0){
+    alert("Não há avisos personalizados para salvar");
+    return;
+  }
+
+  if(!tv){
+    alert("TV não identificada. Abra esta página a partir do painel.");
+    return;
+  }
+
+  await fetch("/save-playlist", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      tv: tv,
+      type: "avisos",
+      items: personalizados
+    })
+  });
+
+  alert("Avisos personalizados salvos permanentemente");
+}
+
+carregarAvisos();
 
 </script>
 
