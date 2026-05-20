@@ -38,7 +38,7 @@ async function aplicarEnsalamento(){
     body: JSON.stringify({
       tv: tv,
       pagina: "ensalamento",
-      intervalo: 60000 // pode atualizar a cada 1 min
+      intervalo: 60000 
     })
   });
 
@@ -63,7 +63,6 @@ async function aplicarTodas(){
   alert("Ensalamento aplicado em todas!");
 }
 
-
 function montarGrade(data){
 
   const grid = [];
@@ -84,10 +83,8 @@ function montarGrade(data){
           if(!grid[i + r]) grid[i + r] = [];
 
           grid[i + r][col + c] = cell.texto;
-
         }
       }
-
       col++;
     });
 
@@ -100,48 +97,10 @@ async function carregarPreview(){
 
   const container = document.getElementById("preview");
 
-  container.innerHTML = "Carregando preview...";
+  const res = await fetch("/api/ensalamento");
+  const html = await res.text();
 
-  try{
-
-    const res = await fetch("/api/ensalamento");
-
-    const dados = await res.json();
-
-    const grid = montarGrade(dados);
-
-    let html = `<div style="display:flex; flex-direction:column;">`;
-
-    // cabeçalho
-    html += `<div style="display:grid; grid-template-columns:repeat(${dados.cabecalho.length},1fr); font-weight:bold;">`;
-
-    dados.cabecalho.forEach(c => {
-      html += `<div>${c}</div>`;
-    });
-
-    html += `</div>`;
-
-    // primeiras linhas
-    grid.slice(0,10).forEach(row => {
-
-      html += `<div style="display:grid; grid-template-columns:repeat(${dados.cabecalho.length},1fr);">`;
-
-      row.forEach(cell => {
-        html += `<div>${cell || ""}</div>`;
-      });
-
-      html += `</div>`;
-    });
-
-    html += `</div>`;
-
-    container.innerHTML = html;
-
-  }
-  catch(e){
-  console.error("Erro preview:", e);
-  container.innerHTML = "Erro no preview";
-}
+  container.innerHTML = html;
 }
 
 carregarPreview();

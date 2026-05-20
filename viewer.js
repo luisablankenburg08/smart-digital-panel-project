@@ -236,7 +236,7 @@ async function carregarEnsalamento() {
 
   const container = document.getElementById("content");
 
-  container.innerHTML = "<h1>Carregando ensalamento...</h1>";
+  container.innerHTML = "<h1>Carregando...</h1>";
 
   try {
 
@@ -244,13 +244,18 @@ async function carregarEnsalamento() {
 
     const dados = await res.json();
 
+    if (dados.erro) {
+      container.innerHTML = dados.erro;
+      return;
+    }
+
     renderTabela(dados);
 
   } catch (e) {
 
     console.error(e);
 
-    container.innerHTML = "<h1>Erro ao carregar ensalamento</h1>";
+    container.innerHTML = "Erro ao carregar";
   }
 }
 
@@ -451,7 +456,10 @@ if(type === "ensalamento"){
   frame.style.display = "none";
   content.style.display = "block";
 
-  carregarEnsalamento();
+  const res = await fetch("/api/ensalamento");
+  const html = await res.text();
+
+  content.innerHTML = html;
 
   carregandoConteudo = false;
   return;
