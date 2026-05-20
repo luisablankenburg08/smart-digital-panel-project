@@ -20,16 +20,10 @@
   "tv2": {
     "avisos": [
       {
-        "titulo": "Aviso Personalizado",
-        "texto": "luisa",
-        "tipo": "personalizado",
-        "selecionado": false
-      },
-      {
-        "titulo": "Aviso Personalizado",
-        "texto": "andré",
-        "tipo": "personalizado",
-        "selecionado": false
+        "titulo": "Mensagem Padrão",
+        "texto": "Smart Digital Panel Project",
+        "tipo": "avisos",
+        "selecionado": true
       }
     ],
     "mapa": [
@@ -44,26 +38,67 @@
         "iframe": "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
         "thumb": "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
         "duracao": 60
+      },
+      {
+        "titulo": "Curso Sistemas para Internet",
+        "iframe": "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
+        "duracao": 325,
+        "tipo": "videos"
+      },
+      {
+        "titulo": " Institucional do IFSC - Garopaba",
+        "iframe": "https://www.youtube.com/embed/ZjC2rCLbIVc?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/ZjC2rCLbIVc/hqdefault.jpg",
+        "duracao": 60
+      },
+      {
+        "titulo": "SEPEI 2026 - Caçador",
+        "iframe": "https://www.youtube.com/embed/wbLtKq_WKRs?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/wbLtKq_WKRs/hqdefault.jpg",
+        "duracao": 45
+      },
+      {
+        "titulo": "Curso Técnico em Informática",
+        "iframe": "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
+        "duracao": 60
       }
     ],
     "padrao": [
-      {
-        "titulo": "Mensagem Padrão",
-        "texto": "Smart Digital Panel Project",
-        "tipo": "avisos",
-        "selecionado": true
-      },
-      {
-        "src": "/playlists/mapa-floripa.jpg",
-        "duracao": 60,
-        "tipo": "mapa"
-      },
       {
         "titulo": "Institucional do IFSC - REDE",
         "iframe": "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
         "thumb": "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
         "duracao": 60,
         "tipo": "videos"
+      },
+      {
+        "titulo": "Curso Sistemas para Internet",
+        "iframe": "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
+        "duracao": 325,
+        "tipo": "videos"
+      },
+      {
+        "titulo": "SEPEI 2026 - Caçador",
+        "iframe": "https://www.youtube.com/embed/wbLtKq_WKRs?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/wbLtKq_WKRs/hqdefault.jpg",
+        "duracao": 45,
+        "tipo": "videos"
+      },
+      {
+        "titulo": "Curso Técnico em Informática",
+        "iframe": "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
+        "duracao": 60,
+        "tipo": "videos"
+      },
+      {
+        "titulo": "Mensagem Padrão",
+        "texto": "Smart Digital Panel Project",
+        "tipo": "avisos",
+        "selecionado": true
       }
     ]
   },
@@ -81,7 +116,7 @@
         "titulo": "Curso Técnico em Informática",
         "iframe": "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1",
         "thumb": "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
-        "duracao": 60
+        "duracao": 205
       }
     ]
   },

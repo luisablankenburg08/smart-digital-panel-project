@@ -3,6 +3,7 @@ const express = require("express")
 const fs = require("fs")
 const { randomUUID } = require("crypto")
 
+
 const app = express()
 
 const PLAYLIST_FILE = path.join(__dirname, "playlists.json");
@@ -190,7 +191,6 @@ app.get("/playlist", (req,res)=>{
 
   let items = [];
 
-  // 🔥 se não passar TV → retorna tudo
   if(!tv){
     Object.values(playlists).forEach(tvData => {
       if(tvData[type]){
@@ -280,4 +280,94 @@ app.post("/update-all", (req, res) => {
     ok: true
   });
 
+});
+
+// ==================
+// ENSALAMENTO
+// ==================
+const puppeteer = require("puppeteer");
+const fetch = require("node-fetch");
+
+app.get("/api/ensalamento", async (req, res) => {
+  let browser;
+
+  try {
+    // 🔥 1. Abre navegador (headless)
+    browser = await puppeteer.launch({
+      executablePath: "/usr/bin/chromium",
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage"
+      ]
+    });
+
+    const page = await browser.newPage();
+
+    // 🔥 evita bloqueio básico
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+      "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    );
+
+    // 🔥 2. Carrega página (gera sessão)
+    await page.goto("https://ifscgaropaba.edupage.org/timetable/", {
+      waitUntil: "networkidle2",
+      timeout: 60000
+    });
+
+    // espera garantir cookies
+    await new Promise(r => setTimeout(r, 5000));
+
+    // 🔥 3. Pega cookies
+    const cookies = await page.cookies();
+
+    const cookieHeader = cookies
+      .map(c => `${c.name}=${c.value}`)
+      .join("; ");
+
+    await browser.close();
+
+    // 🔥 4. Chama API REAL com cookie
+    const response = await fetch(
+      "https://ifscgaropaba.edupage.org/timetable/server/regulartt.js?__func=regularttGetData",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": "Mozilla/5.0",
+          "Referer": "https://ifscgaropaba.edupage.org/timetable/",
+          "Cookie": cookieHeader
+        },
+        body: "lang=br"
+      }
+    );
+
+    const text = await response.text();
+
+    // 🔥 5. Extrai JSON do wrapper
+    const match = text.match(/\((.*)\)/);
+
+    if (!match) {
+      return res.json({
+        erro: "Formato inesperado",
+        raw: text.substring(0, 200)
+      });
+    }
+
+    const data = JSON.parse(match[1]);
+
+    res.json(data);
+
+  } catch (e) {
+    console.error("ERRO:", e);
+
+    if (browser) await browser.close();
+
+    res.status(500).json({
+      erro: "Erro ao buscar ensalamento",
+      detalhe: e.message
+    });
+  }
 });
