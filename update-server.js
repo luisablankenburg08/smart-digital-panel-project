@@ -188,8 +188,18 @@ app.get("/playlist", (req,res)=>{
       fs.readFileSync("playlists.json")
     );
 
-  let items =
-    playlists?.[tv]?.[type] || [];
+  let items = [];
+
+  // 🔥 se não passar TV → retorna tudo
+  if(!tv){
+    Object.values(playlists).forEach(tvData => {
+      if(tvData[type]){
+        items.push(...tvData[type]);
+      }
+    });
+  }else{
+    items = playlists?.[tv]?.[type] || [];
+  }
 
   res.json(items);
 });

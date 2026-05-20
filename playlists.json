@@ -1,0 +1,106 @@
+{
+  "tv1": {
+    "avisos": [
+      {
+        "titulo": "Mensagem Padrão",
+        "texto": "Smart Digital Panel Project",
+        "tipo": "pronto",
+        "selecionado": true
+      }
+    ],
+    "videos": [
+      {
+        "titulo": "Institucional do IFSC - REDE",
+        "iframe": "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
+        "duracao": 60
+      }
+    ]
+  },
+  "tv2": {
+    "avisos": [
+      {
+        "titulo": "Aviso Personalizado",
+        "texto": "luisa",
+        "tipo": "personalizado",
+        "selecionado": false
+      },
+      {
+        "titulo": "Aviso Personalizado",
+        "texto": "andré",
+        "tipo": "personalizado",
+        "selecionado": false
+      }
+    ],
+    "mapa": [
+      {
+        "src": "/playlists/mapa-floripa.jpg",
+        "duracao": 60
+      }
+    ],
+    "videos": [
+      {
+        "titulo": "Institucional do IFSC - REDE",
+        "iframe": "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
+        "duracao": 60
+      }
+    ],
+    "padrao": [
+      {
+        "titulo": "Mensagem Padrão",
+        "texto": "Smart Digital Panel Project",
+        "tipo": "avisos",
+        "selecionado": true
+      },
+      {
+        "src": "/playlists/mapa-floripa.jpg",
+        "duracao": 60,
+        "tipo": "mapa"
+      },
+      {
+        "titulo": "Institucional do IFSC - REDE",
+        "iframe": "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
+        "duracao": 60,
+        "tipo": "videos"
+      }
+    ]
+  },
+  "tv3": {
+    "avisos": [
+      {
+        "titulo": "Mensagem Padrão",
+        "texto": "Smart Digital Panel Project",
+        "tipo": "pronto",
+        "selecionado": true
+      }
+    ],
+    "videos": [
+      {
+        "titulo": "Curso Técnico em Informática",
+        "iframe": "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
+        "duracao": 60
+      }
+    ]
+  },
+  "tv4": {
+    "avisos": [
+      {
+        "titulo": "Mensagem Padrão",
+        "texto": "Smart Digital Panel Project",
+        "tipo": "pronto",
+        "selecionado": true
+      }
+    ],
+    "videos": [
+      {
+        "titulo": "Curso Sistemas para Internet",
+        "iframe": "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1",
+        "thumb": "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
+        "duracao": 60
+      }
+    ]
+  }
+}
