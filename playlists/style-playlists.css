@@ -2,11 +2,11 @@ body {
   background-color: rgb(243, 233, 233);
   margin: 2vw;
   padding: 0;
+  font-family: Arial, Helvetica, sans-serif ;
 }
 
 .titulosplaylists {
   font-size: 32px;
-  font-family: Arial, Helvetica, sans-serif;
   text-align: center;
   color: #6abf59;
 }
@@ -51,13 +51,11 @@ body {
 
 .video-info{
   padding:15px;
-  font-family: Arial, Helvetica, sans-serif;
   font-size: 14px;
 }
 
 #info-tv {
   font-size: 18px;
-  font-family: Arial, Helvetica, sans-serif;
   text-transform: uppercase;
   text-decoration: underline;
 }
@@ -161,4 +159,40 @@ body {
 
 .item-playlist.drag-over{
   border: 2px dashed #333;
+}
+
+/* CSS DO MODO PADRÃO */
+.container{
+  display:flex;
+  gap:20px;
+}
+
+.lista, .playlist{
+  width:50%;
+}
+
+.card{
+  background:#eee;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.item-playlist{
+  background:#dfe6e9;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+  cursor:grab;
+}
+
+.item-playlist.drag-over{
+  border:2px dashed #000;
+}
+
+button{
+  margin-top:10px;
+  padding:10px;
+  cursor:pointer;
 }

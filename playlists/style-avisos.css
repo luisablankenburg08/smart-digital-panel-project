@@ -2,6 +2,7 @@ body {
   background-color: rgb(243, 233, 233);
   margin: 2vw;
   padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .titulosplaylists {
@@ -18,7 +19,7 @@ body {
 }
 
 .card-aviso{
-  background:#2f9e40;
+  background:#5eb86c;
   border-radius:16px;
   padding:20px;
   cursor:pointer;

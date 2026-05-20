@@ -86,7 +86,12 @@ function mostrarItemPlaylist(tipo, item){
 
     content.innerHTML = `
       <div class="aviso">
-        ${item.texto}
+        <fieldset class="field-texto">
+          <legend>
+            <img src="/layouts/imagem-alerta.png" class="warning-image">
+          </legend>
+          ${item.texto}
+        </fieldset>
       </div>
     `;
 

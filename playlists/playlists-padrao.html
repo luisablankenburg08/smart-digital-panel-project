@@ -6,62 +6,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Modo Padrão</title>
-<link rel="stylesheet" href="style-avisos.css">
+<link rel="stylesheet" href="style-playlists.css">
 <link rel="icon" type="image/png" href="https://www.ifsc.edu.br/o/ifsc-internet-lf6_2-theme/images/favicon.ico">
 </head>
 
-<style>
-body{
-  font-family: Arial;
-  padding:20px;
-}
-
-h1{
-  margin-bottom:10px;
-}
-
-.container{
-  display:flex;
-  gap:20px;
-}
-
-.lista, .playlist{
-  width:50%;
-}
-
-.card{
-  background:#eee;
-  padding:10px;
-  margin:5px 0;
-  border-radius:8px;
-  cursor:pointer;
-}
-
-.item-playlist{
-  background:#dfe6e9;
-  padding:10px;
-  margin:5px 0;
-  border-radius:8px;
-  cursor:grab;
-}
-
-.item-playlist.drag-over{
-  border:2px dashed #000;
-}
-
-button{
-  margin-top:10px;
-  padding:10px;
-  cursor:pointer;
-}
-</style>
-</head>
 
 <body>
 
-<button onclick="voltar()">⬅ Voltar</button>
+<button class="btn-voltar" onclick="voltar()">Voltar</button>
 
-<h1>Modo Padrão (Playlist Inteligente)</h1>
+<h1 class="titulosplaylists">Modo Padrão - PLAYLIST</h1>
 
 <div class="container">
 
@@ -71,7 +25,6 @@ button{
 
     <div id="videos"></div>
     <div id="avisos"></div>
-    <div id="mapa"></div>
 
   </div>
 
@@ -80,13 +33,28 @@ button{
     <h2>Ordem de Exibição</h2>
     <div id="playlist-container"></div>
 
-    <button onclick="salvar()">💾 Salvar</button>
-    <button onclick="aplicar()">📺 Aplicar na TV</button>
+    <button class="btn-playlist" onclick="salvar()">Salvar</button>
+    <button class="btn-playlist" onclick="aplicar()">Aplicar na TV</button>
   </div>
 
 </div>
 
 <script>
+
+// =========================
+// CARREGAR ITENS QUE ESTÃO RODANDO
+// =========================
+async function carregarPlaylistSalva(){
+
+  let res = await fetch(`/playlist?tv=${tv}&type=padrao`);
+  let items = await res.json();
+
+  if(Array.isArray(items)){
+    playlist = items;
+    renderPlaylist();
+  }
+}
+
 
 // =========================
 // CONFIG
@@ -95,6 +63,23 @@ const params = new URLSearchParams(window.location.search);
 const tv = params.get("tv");
 
 let playlist = [];
+
+
+// =========================
+// REMOVER DUPLICADOS
+// =========================
+function removerDuplicados(lista, chave){
+
+  const seen = new Set();
+
+  return lista.filter(item => {
+    const valor = item[chave];
+    if(seen.has(valor)) return false;
+    seen.add(valor);
+    return true;
+  });
+}
+
 
 // =========================
 // VOLTAR
@@ -109,8 +94,9 @@ function voltar(){
 async function carregarDisponiveis(){
 
   // vídeos
-  let resV = await fetch(`/playlist?tv=${tv}&type=videos`);
+  let resV = await fetch(`/playlist?type=videos`);
   let videos = await resV.json();
+  videos = removerDuplicados(videos, "iframe");
 
   let divV = document.getElementById("videos");
   divV.innerHTML = "<h3>Vídeos</h3>";
@@ -121,16 +107,21 @@ async function carregarDisponiveis(){
     card.innerText = v.titulo;
 
     card.onclick = () => {
+    let existe = playlist.find(p => p.iframe === v.iframe);
+
+    if(!existe){
       playlist.push({...v, tipo:"videos"});
       renderPlaylist();
-    };
+    }
+  };
 
     divV.appendChild(card);
   });
 
   // avisos
-  let resA = await fetch(`/playlist?tv=${tv}&type=avisos`);
+  let resA = await fetch(`/playlist?type=avisos`)
   let avisos = await resA.json();
+  avisos = removerDuplicados(avisos, "texto");
 
   let divA = document.getElementById("avisos");
   divA.innerHTML = "<h3>Avisos</h3>";
@@ -141,16 +132,21 @@ async function carregarDisponiveis(){
     card.innerText = a.texto;
 
     card.onclick = () => {
-      playlist.push({...a, tipo:"avisos"});
-      renderPlaylist();
+      let existe = playlist.find(p => p.texto === a.texto);
+
+      if(!existe){
+        playlist.push({...a, tipo:"avisos"});
+        renderPlaylist();
+      }
     };
 
     divA.appendChild(card);
   });
 
   // mapa
-  let resM = await fetch(`/playlist?tv=${tv}&type=mapa`);
+  let resM = await fetch(`/playlist?type=mapa`)
   let mapas = await resM.json();
+  mapas = removerDuplicados(mapas, "src");
 
   let divM = document.getElementById("mapa");
   divM.innerHTML = "<h3>Mapa</h3>";
@@ -161,8 +157,11 @@ async function carregarDisponiveis(){
     card.innerText = "Mapa";
 
     card.onclick = () => {
-      playlist.push({...m, tipo:"mapa"});
-      renderPlaylist();
+      let existe = playlist.find(p => p.src === m.src);
+      if(!existe){
+        playlist.push({...m, tipo:"mapa"});
+        renderPlaylist();
+      }
     };
 
     divM.appendChild(card);
@@ -283,6 +282,7 @@ async function aplicar(){
 // INIT
 // =========================
 carregarDisponiveis();
+carregarPlaylistSalva();
 
 </script>
 
