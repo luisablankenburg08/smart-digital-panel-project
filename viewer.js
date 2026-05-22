@@ -233,31 +233,25 @@ window.addEventListener("unload", desligar);
 // =========================
 
 async function carregarEnsalamento() {
-
-  const container = document.getElementById("content");
-
-  container.innerHTML = "<h1>Carregando...</h1>";
-
   try {
-
     const res = await fetch("/api/ensalamento");
+    const data = await res.json();
 
-    const dados = await res.json();
-
-    if (dados.erro) {
-      container.innerHTML = dados.erro;
-      return;
+    if (data.imagem) {
+      document.getElementById("ensalamento").src =
+        data.imagem + "?t=" + Date.now(); // evita cache
     }
 
-    renderTabela(dados);
-
   } catch (e) {
-
-    console.error(e);
-
-    container.innerHTML = "Erro ao carregar";
+    console.error("Erro ao carregar ensalamento");
   }
 }
+
+// 🔁 atualiza a cada 1 min
+setInterval(carregarEnsalamento, 60000);
+
+// primeira carga
+carregarEnsalamento();
 
 function montarGrade(data){
 
