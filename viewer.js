@@ -1,7 +1,5 @@
-
-
 // =========================
-// 🔧 CONFIG INICIAL
+// CONFIG INICIAL
 // =========================
 let playlistRodando = false;
 let params = new URLSearchParams(window.location.search);
@@ -11,26 +9,84 @@ let tvId = preview
   ? params.get("tv")
   : localStorage.getItem("tvId");
 
-// controle interno
 let ultimaPagina = null;
 let intervaloAtual = 2000;
 let modoAtual = "iframe";
-
 
 let ultimoConteudo = "";
 let carregandoConteudo = false;
 let ultimoRefresh = null;
 
-// timers
 let heartbeatInterval = null;
 let polling = null;
 
-// rodar playlist padrão
 let playlistIndex = 0;
 let playlistCache = [];
 let playlistTimer = null;
 
+// elementos DOM (centralizado)
+const frame = document.getElementById("frame");
+const content = document.getElementById("content");
 
+// =========================
+// UTILIDADES
+// =========================
+function getTempo(tipo, item){
+  if(tipo === "videos") return item.duracao * 1000 || 60000;
+  if(tipo === "mapa") return 10000;
+  if(tipo === "avisos") return 5000;
+  return 5000;
+}
+
+// =========================
+// RENDERIZAÇÃO
+// =========================
+function render(tipo, item){
+
+  if(tipo === "videos"){
+    frame.style.display = "block";
+    content.style.display = "none";
+    frame.src = item.iframe;
+    return;
+  }
+
+  frame.style.display = "none";
+  content.style.display = "block";
+
+  if(tipo === "avisos"){
+    content.innerHTML = `
+      <div class="aviso">
+        <fieldset class="field-texto">
+          <legend>
+            <img src="/layouts/logo-ifsc.png" class="warning-image">
+          </legend>
+          ${item.texto}
+        </fieldset>
+      </div>
+    `;
+    return;
+  }
+
+  if(tipo === "mapa"){
+    content.innerHTML = `
+      <img src="${item.src}" class="imagemViewer">
+    `;
+    return;
+  }
+
+  if(tipo === "calendario"){
+    content.innerHTML = `
+      <iframe src="${item.src}"
+        style="width:80vw;height:100vh;margin-left:10vw;">
+      </iframe>
+    `;
+    return;
+  }
+}
+
+// =========================
+// PLAYLIST
+// =========================
 async function rodarPlaylist(tipo){
 
   if(carregandoConteudo) return;
@@ -38,88 +94,23 @@ async function rodarPlaylist(tipo){
   let res = await fetch(`/playlist?tv=${tvId}&type=${tipo}`);
   let items = await res.json();
 
-  if(!items || items.length === 0){
-    return;
-  }
+  if(!items || items.length === 0) return;
 
   playlistCache = items;
 
   let item = items[playlistIndex];
 
-  mostrarItemPlaylist(tipo, item);
+  render(tipo, item);
 
-  // próximo
+  let tempo = getTempo(tipo, item);
+
   playlistIndex = (playlistIndex + 1) % items.length;
-}
-
-function mostrarItemPlaylist(tipo, item){
-
-  let frame = document.getElementById("frame");
-  let content = document.getElementById("content");
 
   if(playlistTimer) clearTimeout(playlistTimer);
 
-  // =========================
-  // VÍDEO
-  // =========================
-  if(tipo === "videos"){
-
-    frame.style.display = "block";
-    content.style.display = "none";
-
-    frame.src = item.iframe;
-
-    playlistTimer = setTimeout(() => {
-      rodarPlaylist("videos");
-    }, item.duracao * 1000 || 60000);
-
-    return;
-  }
-
-  // =========================
-  // AVISO
-  // =========================
-  if(tipo === "avisos"){
-
-    frame.style.display = "none";
-    content.style.display = "block";
-
-    content.innerHTML = `
-      <div class="aviso">
-        <fieldset class="field-texto">
-          <legend>
-            <img src="/layouts/imagem-alerta.png" class="warning-image">
-          </legend>
-          ${item.texto}
-        </fieldset>
-      </div>
-    `;
-
-    playlistTimer = setTimeout(() => {
-      rodarPlaylist("avisos");
-    }, 5000);
-
-    return;
-  }
-
-  // =========================
-  // MAPA
-  // =========================
-  if(tipo === "mapa"){
-
-    frame.style.display = "none";
-    content.style.display = "block";
-
-    content.innerHTML = `
-      <img src="${item.src}" class="imagemViewer">
-    `;
-
-    playlistTimer = setTimeout(() => {
-      rodarPlaylist("mapa");
-    }, 10000);
-
-    return;
-  }
+  playlistTimer = setTimeout(() => {
+    rodarPlaylist(tipo);
+  }, tempo);
 }
 
 async function rodarModoPadrao(){
@@ -127,30 +118,15 @@ async function rodarModoPadrao(){
   let res = await fetch(`/playlist?tv=${tvId}&type=padrao`);
   let items = await res.json();
 
-  if(!items || items.length === 0){
-    return;
-  }
+  if(!items || items.length === 0) return;
 
   let item = items[playlistIndex];
 
-  mostrarItemPlaylist(item.tipo, item);
+  render(item.tipo, item);
+
+  let tempo = getTempo(item.tipo, item);
 
   playlistIndex = (playlistIndex + 1) % items.length;
-
-  // ⏱️ tempo automático
-  let tempo = 5000;
-
-  if(item.tipo === "videos"){
-    tempo = item.duracao * 1000 || 60000;
-  }
-
-  if(item.tipo === "mapa"){
-    tempo = 10000;
-  }
-
-  if(item.tipo === "avisos"){
-    tempo = 5000;
-  }
 
   if(playlistTimer) clearTimeout(playlistTimer);
 
@@ -158,11 +134,11 @@ async function rodarModoPadrao(){
     rodarModoPadrao();
   }, tempo);
 }
+
 // =========================
-// REGISTRO
+// REGISTER AND HEARTBEAT
 // =========================
 async function registrar(){
-
   if(preview) return;
 
   try{
@@ -185,11 +161,7 @@ async function registrar(){
   }
 }
 
-// =========================
-// HEARTBEAT
-// =========================
 async function ping(){
-
   if(preview) return;
 
   try{
@@ -212,10 +184,9 @@ function iniciarHeartbeat(){
 }
 
 // =========================
-// DESCONEXÃO
+// UNREGISTER
 // =========================
 function desligar(){
-
   if(preview) return;
 
   if(tvId){
@@ -228,259 +199,79 @@ function desligar(){
 window.addEventListener("beforeunload", desligar);
 window.addEventListener("pagehide", desligar);
 window.addEventListener("unload", desligar);
+
 // =========================
 // ENSALAMENTO
 // =========================
-
 async function carregarEnsalamento() {
   try {
     const res = await fetch("/api/ensalamento");
-    const data = await res.json();
+    const html = await res.text();
 
-    if (data.imagem) {
-      document.getElementById("ensalamento").src =
-        data.imagem + "?t=" + Date.now(); // evita cache
-    }
+    content.innerHTML = html;
 
   } catch (e) {
     console.error("Erro ao carregar ensalamento");
   }
 }
 
-// 🔁 atualiza a cada 1 min
 setInterval(carregarEnsalamento, 60000);
 
-// primeira carga
-carregarEnsalamento();
-
-function montarGrade(data){
-
-  const grid = [];
-
-  data.linhas.forEach((linha, i) => {
-
-    if(!grid[i]) grid[i] = [];
-
-    let col = 0;
-
-    linha.forEach(cell => {
-
-      // encontra próxima coluna livre
-      while(grid[i][col]) col++;
-
-      for(let r = 0; r < cell.rowspan; r++){
-        for(let c = 0; c < cell.colspan; c++){
-
-          if(!grid[i + r]) grid[i + r] = [];
-
-          grid[i + r][col + c] = cell.texto;
-
-        }
-      }
-
-      col++;
-    });
-
-  });
-
-  return grid;
-}
-
-function renderTabela(data){
-
-  const container = document.getElementById("content");
-
-  const grid = montarGrade(data);
-
-  let html = `<div class="tabela">`;
-
-  // cabeçalho
-  html += `<div class="linha">`;
-  data.cabecalho.forEach(c => {
-    html += `<div class="cell header">${c}</div>`;
-  });
-  html += `</div>`;
-
-  // linhas
-  grid.forEach(row => {
-
-    html += `<div class="linha">`;
-
-    row.forEach(cell => {
-      html += `<div class="cell">${cell || ""}</div>`;
-    });
-
-    html += `</div>`;
-  });
-
-  html += `</div>`;
-
-  container.innerHTML = html;
-}
 // =========================
-// PLAYLIST IFRAME
+// CONTEÚDO DIRETO
 // =========================
-
 async function mostrarConteudo(type, refreshAtual){
 
   if(carregandoConteudo) return;
   carregandoConteudo = true;
 
-  let frame = document.getElementById("frame");
-  let content = document.getElementById("content");
-
-
-  let res =
-    await fetch(`/playlist?tv=${tvId}&type=${type}`);
-
+  let res = await fetch(`/playlist?tv=${tvId}&type=${type}`);
   let items = await res.json();
 
-  // pega apenas o primeiro item
   let item = items[0];
   let conteudoAtual = JSON.stringify(items);
 
   if(!item){
-
     frame.style.display = "none";
-
     content.style.display = "flex";
-
-    content.innerHTML = `
-      <div class="aviso">
-        Nenhum conteúdo cadastrado
-      </div>
-    `;
+    content.innerHTML = `<div class="aviso">Nenhum conteúdo cadastrado</div>`;
     carregandoConteudo = false;
     return;
   }
 
-  if(
-    ultimoConteudo === conteudoAtual &&
-    ultimoRefresh === refreshAtual
-  ){
-      carregandoConteudo = false;
-      return;
+  if(ultimoConteudo === conteudoAtual && ultimoRefresh === refreshAtual){
+    carregandoConteudo = false;
+    return;
   }
-  
+
   ultimoConteudo = conteudoAtual;
   ultimoRefresh = refreshAtual;
 
-  // =========================
-  // VÍDEOS
-  // =========================
-  if(type === "videos"){
-
-    frame.style.display = "block";
-
-    content.style.display = "none";
-
-    frame.src = item.iframe;
-
+  if(type === "ensalamento"){
+    await carregarEnsalamento();
     carregandoConteudo = false;
     return;
   }
 
-  // =========================
-  // AVISOS
-  // =========================
-  if(type === "avisos"){
-
-    frame.style.display = "none";
-
-    content.style.display = "block";
-
-    content.innerHTML = `
-      <div class="aviso">
-        <fieldset class="field-texto">
-        <legend> <img src="/layouts/imagem-alerta.png" class="warning-image" > </legend>
-          ${item.texto}
-        </fieldset>
-      </div>
-    `;
-    carregandoConteudo = false;
-    return;
-  }
-
-  // =========================
-  // MAPA
-  // =========================
-  if(type === "mapa"){
-
-    frame.style.display = "none";
-
-    content.style.display = "block";
-
-    content.innerHTML = `
-      <img
-        src="${item.src}"
-        class="imagemViewer"
-      >
-    `;
-    carregandoConteudo = false;
-    return;
-  }
-
-// =========================
-// CALENDÁRIO
-// =========================
-if(type === "calendario"){
-
-    frame.style.display = "none";
-
-    content.style.display = "block";
-
-    content.innerHTML = `
-        <iframe
-            src="${item.src}"
-            style="
-                width:80vw;
-                height:100vh;
-                margin-left: 10vw;
-            ">
-        </iframe>
-    `;
-    carregandoConteudo = false;
-    return;
-}
-// =========================
-// ENSALAMENTO
-// =========================
-if(type === "ensalamento"){
-
-  frame.style.display = "none";
-  content.style.display = "block";
-
-  const res = await fetch("/api/ensalamento");
-  const html = await res.text();
-
-  content.innerHTML = html;
+  render(type, item);
 
   carregandoConteudo = false;
-  return;
-}
 }
 
 // =========================
-// 🔄 LOOP PRINCIPAL
+// LOOP PRINCIPAL
 // =========================
 async function carregar(){
 
   try{
-
     let res = await fetch("/state");
     let state = await res.json();
 
     if(!tvId || !state[tvId]){
-
       if(!preview){
-
-        console.log("Re-registrando TV...");
-
         localStorage.removeItem("tvId");
-
         await registrar();
       }
-
       return;
     }
 
@@ -491,118 +282,62 @@ async function carregar(){
         ? config
         : config.pagina;
 
-    let frame =
-      document.getElementById("frame");
-
-    let content =
-      document.getElementById("content");
-
-
     if(pagina && pagina.includes("padrao")){
-
       if(modoAtual !== "padrao"){
         playlistIndex = 0;
         rodarModoPadrao();
       }
-
       modoAtual = "padrao";
       return;
-      }
-    // =========================
-    // AVISOS
-    // =========================
+    }
+
     if(pagina && pagina.includes("avisos")){
-
       modoAtual = "avisos";
-
       mostrarConteudo("avisos",config.refresh);
-    
       return;
     }
 
-    // =========================
-    // VÍDEOS
-    // =========================
-    if(pagina && pagina.includes("videos",)){
-
+    if(pagina && pagina.includes("videos")){
       modoAtual = "videos";
-
       mostrarConteudo("videos",config.refresh);
-
       return;
     }
-
-    // =========================
-    // MAPA
-    // =========================
 
     if(pagina && pagina.includes("mapa")){
-
       modoAtual = "mapa";
-
       mostrarConteudo("mapa",config.refresh);
-      
       return;
     }
-
-    // =========================
-    // CALENDÁRIO
-    // =========================
 
     if(pagina && pagina.includes("calendario")){
-
       modoAtual = "calendario";
-
       mostrarConteudo("calendario",config.refresh);
-
       return;
     }
-    // =========================
-    // ENSALAMENTO
-    // =========================
+
     if(pagina && pagina.includes("ensalamento")){
-
       modoAtual = "ensalamento";
-
       mostrarConteudo("ensalamento", config.refresh);
-
       return;
     }
 
-    // =========================
-    // MODO PADRÃO
-    // =========================
-    if(pagina && pagina.includes("padrao")){
-
-      modoAtual = "padrao";
-
-      rodarModoPadrao();
-
-      return;
-    }
-    // =========================
-    // IFRAME NORMAL
-    // =========================
     modoAtual = "iframe";
 
     frame.style.display = "block";
     content.style.display = "none";
 
     if(ultimaPagina !== pagina){
-
       frame.src = pagina;
-
       ultimaPagina = pagina;
     }
 
   }catch(e){
-
     console.error("Erro ao carregar:", e);
   }
 }
 
 // =========================
-// 🚀 INICIALIZAÇÃO
+// INICIALIZAÇÃO
 // =========================
 async function iniciar(){
 
@@ -611,11 +346,9 @@ async function iniciar(){
     await carregar();
     polling = setInterval(carregar, 2000);
   }else{
-    console.log("Modo preview ativo");
     await carregar();
     polling = setInterval(carregar, 5000);
   }
 }
 
 iniciar();
-

@@ -1,7 +1,7 @@
 body{
   margin:0;
   overflow:hidden;
-  background-color: black;
+  background-color: rgb(243, 233, 233);
 }
 
 #content{
@@ -26,8 +26,8 @@ body{
   justify-content:center;
   text-align:center;
   font-size: 5vw;
-  font-family:Arial;
-  color:white;
+  font-family:'Times New Roman', Times, serif;
+  color:black;
 }
 
 .field-texto {
@@ -37,12 +37,16 @@ body{
   justify-content: center;      
   align-items: center;          
   margin-left: 5vw;
-  
+  border-color: #6abf59;
+}
+.field-texto legend {
+  text-align: left;
 }
 
 .warning-image {
-  width: 8vw;
-  height: 8vw;
+  width: 15vw;
+  height: 4vw;
+  margin-top: 1vh;
 }
 
 

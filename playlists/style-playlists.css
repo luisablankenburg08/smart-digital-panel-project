@@ -60,6 +60,25 @@ body {
   text-decoration: underline;
 }
 
+#youtube-url {
+  display: flex;
+  width: 30vw;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  margin-top: 2vw;
+}
+
+#youtube-titulo {
+
+  width: 20vw;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  margin-top: 2vw;
+}
+
+
 .selecionar-btn{
   width:100%;
   padding:10px;

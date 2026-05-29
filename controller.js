@@ -127,5 +127,4 @@ async function mudar(tv, pagina, intervalo){
 
 }
 
-setInterval(carregar,180000); // atualiza a cada 3 minutos    
 carregar();

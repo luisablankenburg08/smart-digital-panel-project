@@ -14,66 +14,37 @@
 
 <div id="info-tv"></div>
 
+<div class="add-video-box">
+  <input type="text" id="youtube-url" placeholder="Cole a URL do YouTube aqui">
+  <input type="text" id="youtube-titulo" placeholder="Digite o título do vídeo">
+  <button class="btn-playlist" onclick="adicionarVideo()">Adicionar Vídeo</button>
+</div>
+
 <div id="lista-videos"></div>
 
 <div class="acoes-playlist">
-
-  <button
-    class="btn-playlist"
-    onclick="salvarPlaylist()"
-  >
+  <button class="btn-playlist" onclick="salvarPlaylist()">
     Aplicar Playlist
   </button>
 
-  <button
-    class="btn-playlist destaque"
-    onclick="aplicarTodas()"
-  >
+  <button class="btn-playlist destaque" onclick="aplicarTodas()">
     Aplicar em todas as telas
   </button>
-
 </div>
+
 <script>
 
+//========================
+// VOLTAR
+//========================
 function voltarMenu() {
-  window.location.href = "/controller.html"; }
-
-async function aplicarTodas(){
-
-  if(playlist.length === 0){
-
-    alert("Selecione ao menos um vídeo");
-
-    return;
-  }
-
-  await fetch("/update-all", {
-
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json"
-    },
-
-    body: JSON.stringify({
-
-      pagina: "videos",
-      type: "videos",
-      intervalo: 0,
-      items: playlist
-
-    })
-
-  });
-
-  alert("Vídeos aplicados em todas as TVs");
+  window.location.href = "/controller.html";
 }
 
 
-// ========================================
+//========================
 // TV ATUAL
-// ========================================
-
+//========================
 const params = new URLSearchParams(window.location.search);
 const tv = params.get("tv");
 
@@ -81,55 +52,114 @@ document.getElementById("info-tv").innerText =
 "Configurando vídeos da " + tv;
 
 
-// ========================================
-// PLAYLIST PRONTA
-// ========================================
+//========================
+// VARIÁVEIS
+//========================
+let videosDisponiveis = [];
+let playlist = [];
 
-const videosDisponiveis = [
 
+//========================
+// EXTRAIR ID
+//========================
+function extrairVideoId(url) {
+  try {
+    let parsedUrl = new URL(url);
+
+    if (parsedUrl.searchParams.get("v")) {
+      return parsedUrl.searchParams.get("v");
+    }
+
+    if (parsedUrl.hostname.includes("youtu.be")) {
+      return parsedUrl.pathname.slice(1);
+    }
+
+    if (parsedUrl.pathname.includes("/embed/")) {
+      return parsedUrl.pathname.split("/embed/")[1];
+    }
+
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function extrairIdDoIframe(iframe) {
+  try {
+    let url = new URL(iframe);
+    return url.pathname.split("/embed/")[1]?.split("?")[0];
+  } catch {
+    return null;
+  }
+}
+
+
+//========================
+// CARREGAR VÍDEOS
+//========================
+async function carregarVideos(){
+
+  const fixos = [
   {
+    id: "1GiXd3lAjrE",
     titulo: "Institucional do IFSC - REDE",
-    iframe:  "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
+    iframe: "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
     thumb: "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
     duracao: 60
   },
-
   {
+    id: "tD2tECmRbTQ",
     titulo: "Curso Sistemas para Internet",
     iframe: "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1",
     thumb: "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
     duracao: 60
   },
-
   {
-    titulo: " Institucional do IFSC - Garopaba",
-    iframe:  "https://www.youtube.com/embed/ZjC2rCLbIVc?autoplay=1&mute=1",
+    id: "ZjC2rCLbIVc",
+    titulo: "Institucional do IFSC - Garopaba",
+    iframe: "https://www.youtube.com/embed/ZjC2rCLbIVc?autoplay=1&mute=1",
     thumb: "https://img.youtube.com/vi/ZjC2rCLbIVc/hqdefault.jpg",
     duracao: 60
   },
-
- {
+  {
+    id: "wbLtKq_WKRs",
     titulo: "SEPEI 2026 - Caçador",
-    iframe:  "https://www.youtube.com/embed/wbLtKq_WKRs?autoplay=1&mute=1",
+    iframe: "https://www.youtube.com/embed/wbLtKq_WKRs?autoplay=1&mute=1",
     thumb: "https://img.youtube.com/vi/wbLtKq_WKRs/hqdefault.jpg",
     duracao: 60
   },
-
   {
+    id: "4m7xcDovykU",
     titulo: "Curso Técnico em Informática",
     iframe: "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1",
     thumb: "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
     duracao: 60
   }
-]
+];
 
-// playlist selecionada
-let playlist = [];
+  try {
+    const res = await fetch("/videos");
+    let dinamicos = [];
 
-// ========================================
-// RENDERIZA VÍDEOS
-// ========================================
+    if(res.ok){
+      dinamicos = await res.json();
+    }
 
+    videosDisponiveis = [...fixos, ...dinamicos];
+
+  } catch (e) {
+    console.error("Erro ao carregar vídeos:", e);
+    videosDisponiveis = fixos;
+  }
+
+  renderVideos();
+}
+
+
+//========================
+// RENDER
+//========================
 function renderVideos(){
 
   const lista = document.getElementById("lista-videos");
@@ -137,35 +167,41 @@ function renderVideos(){
 
   videosDisponiveis.forEach(video => {
 
+    let videoId = video.id || extrairIdDoIframe(video.iframe);
+
     let card = document.createElement("div");
     card.className = "video-card";
 
+    let jaSelecionado = playlist.find(v =>
+    (v.id || extrairIdDoIframe(v.iframe)) === videoId
+    );
+
+    if(jaSelecionado){
+      card.classList.add("video-selecionado");
+    }
+
     card.innerHTML = `
-    
       <img src="${video.thumb}" class="video-thumb">
-
       <div class="video-info">
-
         <h3>${video.titulo}</h3>
-
         <button class="selecionar-btn">
-          Selecionar
+          ${jaSelecionado ? "Selecionado" : "Selecionar"}
         </button>
-
       </div>
-
     `;
 
     let btn = card.querySelector(".selecionar-btn");
 
     btn.onclick = () => {
 
-      let existe =
-        playlist.find(v => v.iframe === video.iframe);
+      let existe = playlist.find(v =>
+      (v.id || extrairIdDoIframe(v.iframe)) === videoId
+      );
 
       if(existe){
-        playlist =
-          playlist.filter(v => v.iframe !== video.iframe);
+        playlist = playlist.filter(v =>
+          (v.id || extrairIdDoIframe(v.iframe)) !== videoId
+        );
         card.classList.remove("video-selecionado");
         btn.innerText = "Selecionar";
 
@@ -175,15 +211,76 @@ function renderVideos(){
         btn.innerText = "Selecionado";
       }
     };
+
     lista.appendChild(card);
   });
 }
 
 
-// ========================================
-// SALVAR PLAYLIST
-// ========================================
+//========================
+// ADICIONAR VÍDEO
+//========================
+async function adicionarVideo(){
 
+  const url = document.getElementById("youtube-url").value.trim();
+  const titulo = document.getElementById("youtube-titulo").value.trim();
+
+  if (!url) {
+    alert("Cole uma URL válida");
+    return;
+  }
+
+  if (!titulo) {
+    alert("Digite um título para o vídeo");
+    return;
+  }
+
+  const videoId = extrairVideoId(url);
+
+  if (!videoId) {
+    alert("URL inválida");
+    return;
+  }
+
+  let jaExiste = videosDisponiveis.find(v =>
+    (v.id || extrairIdDoIframe(v.iframe)) === videoId
+  );
+
+  if (jaExiste) {
+    alert("Esse vídeo já existe");
+    return;
+  }
+
+  const novoVideo = {
+    titulo: titulo, // 🔥 AQUI É O PONTO PRINCIPAL
+    iframe: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`,
+    thumb: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+    duracao: 60
+  };
+
+  const res = await fetch("/videos", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(novoVideo)
+  });
+
+  if(!res.ok){
+    alert("Erro ao salvar vídeo");
+    return;
+  }
+
+  document.getElementById("youtube-url").value = "";
+  document.getElementById("youtube-titulo").value = "";
+
+  carregarVideos();
+}
+
+
+//========================
+// SALVAR PLAYLIST
+//========================
 async function salvarPlaylist(){
 
   if(playlist.length === 0){
@@ -192,7 +289,6 @@ async function salvarPlaylist(){
   }
 
   await fetch("/save-playlist", {
-
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -204,28 +300,56 @@ async function salvarPlaylist(){
     })
   });
 
-  // =========================
-  // MUDA ESTADO DA TV
-  // =========================
-
   await fetch("/update", {
-
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-    tv: tv,
-    pagina: "videos",
-    intervalo: 0,
-  })
+      tv: tv,
+      pagina: "videos",
+      intervalo: 0
+    })
   });
 
   alert("Playlist aplicada!");
-
   window.location.href = "/controller.html";
 }
-renderVideos();
+
+
+//========================
+// APLICAR EM TODAS
+//========================
+async function aplicarTodas(){
+
+  if(playlist.length === 0){
+    alert("Selecione ao menos um vídeo");
+    return;
+  }
+
+  await fetch("/update-all", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      pagina: "videos",
+      type: "videos",
+      intervalo: 0,
+      items: playlist
+    })
+  });
+
+  alert("Vídeos aplicados em todas as TVs");
+}
+
+
+//========================
+// INICIAR
+//========================
+carregarVideos();
+
+
 </script>
 
 </body>
