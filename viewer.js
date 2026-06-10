@@ -1,7 +1,6 @@
 // =========================
 // CONFIG INICIAL
 // =========================
-let playlistRodando = false;
 let params = new URLSearchParams(window.location.search);
 let preview = params.get("preview") === "true";
 
@@ -10,71 +9,179 @@ let tvId = preview
   : localStorage.getItem("tvId");
 
 let ultimaPagina = null;
-let intervaloAtual = 2000;
 let modoAtual = "iframe";
 
 let ultimoConteudo = "";
-let carregandoConteudo = false;
 let ultimoRefresh = null;
+let carregandoConteudo = false;
 
 let heartbeatInterval = null;
 let polling = null;
 
 let playlistIndex = 0;
-let playlistCache = [];
 let playlistTimer = null;
 
-// elementos DOM (centralizado)
+// DOM
 const frame = document.getElementById("frame");
 const content = document.getElementById("content");
 
 // =========================
-// UTILIDADES
+// NORMALIZAR YOUTUBE
 // =========================
-function getTempo(tipo, item){
-  if(tipo === "videos") return item.duracao * 1000 || 60000;
-  if(tipo === "mapa") return 10000;
-  if(tipo === "avisos") return 5000;
-  return 5000;
+function normalizarYoutube(src) {
+  try {
+    let url = new URL(src);
+
+    if (!url.hostname.includes("youtube")) return src;
+
+    if (url.pathname === "/watch" || url.pathname === "/watch/") {
+      url.searchParams.set("autoplay", "1");
+      url.searchParams.set("mute", "1");
+      return url.toString();
+    }
+
+    if (!url.pathname.includes("/embed/")) {
+      let id = url.searchParams.get("v");
+      if (id) {
+        url = new URL(`https://www.youtube.com/embed/${id}`);
+      }
+    }
+
+    url.searchParams.set("autoplay", "1");
+    url.searchParams.set("mute", "1");
+    url.searchParams.set("playsinline", "1");
+    url.searchParams.set("rel", "0");
+
+    return url.toString();
+
+  } catch {
+    return src;
+  }
 }
 
 // =========================
-// RENDERIZAÇÃO
+// TEMPO
 // =========================
-function render(tipo, item){
+function getTempo(tipo, item) {
 
-  if(tipo === "videos"){
-    frame.style.display = "block";
-    content.style.display = "none";
-    frame.src = item.iframe;
-    return;
+  if (tipo === "videos") {
+    return (item.duracao || 60) * 1000;
   }
 
+
+  if (tipo === "mapa") return 10000;
+  if (tipo === "avisos") {
+
+  if (
+    item.embed ||
+    item.tipo === "canva"
+  ) {
+    return 999999999;
+  }
+
+  return 5000;
+}
+
+  return 5000;
+}
+
+
+// =========================
+// RENDER
+// =========================
+async function render(tipo, item) {
+
+  // ================= VIDEO =================
+if (tipo === "videos") {
+
+    frame.style.display = "block";
+    content.style.display = "none";
+
+    let src = item.iframe;
+
+    src = normalizarYoutube(src);
+
+    if (frame.src !== src) {
+        frame.src = src;
+    }
+
+    return;
+}
+
+  // ================= OUTROS =================
   frame.style.display = "none";
   content.style.display = "block";
 
-  if(tipo === "avisos"){
+  if (tipo === "avisos") {
+
+  // =========================
+  // AVISO CANVA / LINK
+  // =========================
+
+  if (item.embed || item.tipo === "canva") {
+
+    let src =
+      item.embed ||
+      item.url ||
+      item.texto;
+
     content.innerHTML = `
-      <div class="aviso">
-        <fieldset class="field-texto">
-          <legend>
-            <img src="/layouts/logo-ifsc.png" class="warning-image">
-          </legend>
-          ${item.texto}
-        </fieldset>
+      <div
+        style="
+          width:100vw;
+          height:100vh;
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          background:#000;
+        "
+      >
+        <iframe
+          src="${src}"
+          style="
+            width:100vw;
+            height:100vh;
+            border:none;
+          "
+          allowfullscreen
+          allow="
+            autoplay;
+            fullscreen;
+            clipboard-read;
+            clipboard-write
+          "
+        ></iframe>
       </div>
     `;
+
     return;
   }
 
-  if(tipo === "mapa"){
+  // =========================
+  // AVISO TEXTO
+  // =========================
+
+  content.innerHTML = `
+    <div class="aviso">
+      <fieldset class="field-texto">
+        <legend>
+          <img src="/layouts/logo-ifsc.png" class="warning-image">
+        </legend>
+        ${item.texto}
+      </fieldset>
+    </div>
+  `;
+
+  return;
+}
+  if (tipo === "mapa") {
     content.innerHTML = `
       <img src="${item.src}" class="imagemViewer">
     `;
     return;
   }
 
-  if(tipo === "calendario"){
+  if (tipo === "calendario") {
     content.innerHTML = `
       <iframe src="${item.src}"
         style="width:80vw;height:100vh;margin-left:10vw;">
@@ -84,67 +191,70 @@ function render(tipo, item){
   }
 }
 
+
 // =========================
 // PLAYLIST
 // =========================
-async function rodarPlaylist(tipo){
+async function rodarPlaylist(tipo, items) {
 
-  if(carregandoConteudo) return;
-
-  let res = await fetch(`/playlist?tv=${tvId}&type=${tipo}`);
-  let items = await res.json();
-
-  if(!items || items.length === 0) return;
-
-  playlistCache = items;
+  if (!items || items.length === 0) return;
 
   let item = items[playlistIndex];
 
-  render(tipo, item);
+  await render(tipo, item);
 
   let tempo = getTempo(tipo, item);
 
   playlistIndex = (playlistIndex + 1) % items.length;
 
-  if(playlistTimer) clearTimeout(playlistTimer);
+  if (playlistTimer) clearTimeout(playlistTimer);
 
+  if ( !(true) && !(tipo === "avisos" && (item.embed || item.tipo === "canva"))) {
   playlistTimer = setTimeout(() => {
     rodarPlaylist(tipo);
   }, tempo);
 }
+}
 
-async function rodarModoPadrao(){
+
+// =========================
+// MODO PADRÃO
+// =========================
+async function rodarModoPadrao() {
 
   let res = await fetch(`/playlist?tv=${tvId}&type=padrao`);
   let items = await res.json();
 
-  if(!items || items.length === 0) return;
+  if (!items || items.length === 0) return;
 
   let item = items[playlistIndex];
 
-  render(item.tipo, item);
+  await render(item.tipo, item);
 
   let tempo = getTempo(item.tipo, item);
 
   playlistIndex = (playlistIndex + 1) % items.length;
 
-  if(playlistTimer) clearTimeout(playlistTimer);
+  if (playlistTimer) clearTimeout(playlistTimer);
 
-  playlistTimer = setTimeout(() => {
-    rodarModoPadrao();
-  }, tempo);
+  if (!(item.tipo === "videos" && item.live)) {
+    playlistTimer = setTimeout(() => {
+      rodarModoPadrao();
+    }, tempo);
+  }
 }
 
-// =========================
-// REGISTER AND HEARTBEAT
-// =========================
-async function registrar(){
-  if(preview) return;
 
-  try{
+// =========================
+// REGISTRO
+// =========================
+async function registrar() {
+  if (preview) return;
+
+  try {
     let res = await fetch("/register", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tv: tvId })
     });
 
@@ -156,119 +266,123 @@ async function registrar(){
     iniciarHeartbeat();
     await ping();
 
-  }catch(e){
+  } catch (e) {
     console.error("Erro register:", e);
   }
 }
 
-async function ping(){
-  if(preview) return;
+async function ping() {
+  if (preview) return;
 
-  try{
+  try {
     await fetch("/ping", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tv: tvId }),
       keepalive: true
     });
-  }catch(e){
+  } catch (e) {
     console.error("Erro ping:", e);
   }
 }
 
-function iniciarHeartbeat(){
-  if(preview) return;
+function iniciarHeartbeat() {
+  if (preview) return;
 
-  if(heartbeatInterval) clearInterval(heartbeatInterval);
-  heartbeatInterval = setInterval(ping, 5000);
+  if (heartbeatInterval) clearInterval(heartbeatInterval);
+  heartbeatInterval = setInterval(ping, 30000);
 }
+
 
 // =========================
 // UNREGISTER
 // =========================
-function desligar(){
-  if(preview) return;
+function desligar() {
+  if (preview) return;
 
-  if(tvId){
+  if (tvId) {
     const params = new URLSearchParams();
-    params.append('tv', tvId);
+    params.append("tv", tvId);
     navigator.sendBeacon("/unregister", params);
   }
 }
 
 window.addEventListener("beforeunload", desligar);
-window.addEventListener("pagehide", desligar);
-window.addEventListener("unload", desligar);
+
 
 // =========================
-// ENSALAMENTO
+// CONTEÚDO
 // =========================
-async function carregarEnsalamento() {
-  try {
-    const res = await fetch("/api/ensalamento");
-    const html = await res.text();
+async function mostrarConteudo(type, refreshAtual) {
 
-    content.innerHTML = html;
-
-  } catch (e) {
-    console.error("Erro ao carregar ensalamento");
-  }
-}
-
-setInterval(carregarEnsalamento, 60000);
-
-// =========================
-// CONTEÚDO DIRETO
-// =========================
-async function mostrarConteudo(type, refreshAtual){
-
-  if(carregandoConteudo) return;
+  if (carregandoConteudo) return;
   carregandoConteudo = true;
 
-  let res = await fetch(`/playlist?tv=${tvId}&type=${type}`);
-  let items = await res.json();
+  try {
 
-  let item = items[0];
-  let conteudoAtual = JSON.stringify(items);
+    let res = await fetch(`/playlist?tv=${tvId}&type=${type}`);
+    let items = await res.json();
 
-  if(!item){
-    frame.style.display = "none";
-    content.style.display = "flex";
-    content.innerHTML = `<div class="aviso">Nenhum conteúdo cadastrado</div>`;
+    if (!items || items.length === 0) return;
+
+    // Normalizar itens para comparar apenas campos relevantes e evitar flicker
+    let simplified;
+    if (type === "avisos") {
+      simplified = items.map(i => ({
+        embedRaw: i.embedRaw || null,
+        embed: i.embed || null,
+        url: i.url || null,
+        texto: typeof i.texto === 'string' ? i.texto : JSON.stringify(i.texto)
+      }));
+    } else if (type === "videos") {
+      simplified = items.map(i => ({
+        id: i.id || null,
+        iframe: i.iframe || null,
+        live: !!i.live,
+        duracao: i.duracao || null
+      }));
+    } else {
+      simplified = items;
+    }
+
+    let conteudoAtual = JSON.stringify(simplified);
+
+    // Só re-renderiza quando o conteúdo relevante mudar
+    if (ultimoConteudo === conteudoAtual) {
+      return;
+    }
+
+    ultimoConteudo = conteudoAtual;
+    ultimoRefresh = refreshAtual;
+
+    playlistIndex = 0;
+
+    if (playlistTimer) {
+      clearTimeout(playlistTimer);
+      playlistTimer = null;
+    }
+
+      await rodarPlaylist(type, items);
+
+  } catch (e) {
+    console.error("Erro mostrarConteudo:", e);
+  } finally {
     carregandoConteudo = false;
-    return;
   }
-
-  if(ultimoConteudo === conteudoAtual && ultimoRefresh === refreshAtual){
-    carregandoConteudo = false;
-    return;
-  }
-
-  ultimoConteudo = conteudoAtual;
-  ultimoRefresh = refreshAtual;
-
-  if(type === "ensalamento"){
-    await carregarEnsalamento();
-    carregandoConteudo = false;
-    return;
-  }
-
-  render(type, item);
-
-  carregandoConteudo = false;
 }
+
 
 // =========================
 // LOOP PRINCIPAL
 // =========================
-async function carregar(){
+async function carregar() {
 
-  try{
+  try {
     let res = await fetch("/state");
     let state = await res.json();
 
-    if(!tvId || !state[tvId]){
-      if(!preview){
+    if (!tvId || !state[tvId]) {
+      if (!preview) {
         localStorage.removeItem("tvId");
         await registrar();
       }
@@ -282,71 +396,83 @@ async function carregar(){
         ? config
         : config.pagina;
 
-    if(pagina && pagina.includes("padrao")){
-      if(modoAtual !== "padrao"){
+    // ================= MODOS =================
+
+    if (pagina?.includes("padrao")) {
+
+      if (modoAtual !== "padrao") {
         playlistIndex = 0;
+
+        if (playlistTimer) {
+          clearTimeout(playlistTimer);
+          playlistTimer = null;
+        }
+
         rodarModoPadrao();
       }
+
       modoAtual = "padrao";
       return;
     }
 
-    if(pagina && pagina.includes("avisos")){
-      modoAtual = "avisos";
-      mostrarConteudo("avisos",config.refresh);
-      return;
-    }
-
-    if(pagina && pagina.includes("videos")){
+    if (pagina?.includes("videos")) {
       modoAtual = "videos";
-      mostrarConteudo("videos",config.refresh);
+      mostrarConteudo("videos", config.refresh);
       return;
     }
 
-    if(pagina && pagina.includes("mapa")){
+    if (pagina?.includes("avisos")) {
+      modoAtual = "avisos";
+      mostrarConteudo("avisos", config.refresh);
+      return;
+    }
+
+    if (pagina?.includes("mapa")) {
       modoAtual = "mapa";
-      mostrarConteudo("mapa",config.refresh);
+      mostrarConteudo("mapa", config.refresh);
       return;
     }
 
-    if(pagina && pagina.includes("calendario")){
+    if (pagina?.includes("calendario")) {
       modoAtual = "calendario";
-      mostrarConteudo("calendario",config.refresh);
+      mostrarConteudo("calendario", config.refresh);
       return;
     }
 
-    if(pagina && pagina.includes("ensalamento")){
-      modoAtual = "ensalamento";
-      mostrarConteudo("ensalamento", config.refresh);
-      return;
-    }
-
+    // ================= FALLBACK =================
     modoAtual = "iframe";
+
+    if (playlistTimer) {
+      clearTimeout(playlistTimer);
+      playlistTimer = null;
+    }
 
     frame.style.display = "block";
     content.style.display = "none";
 
-    if(ultimaPagina !== pagina){
+    if (ultimaPagina !== pagina) {
       frame.src = pagina;
       ultimaPagina = pagina;
     }
 
-  }catch(e){
+  } catch (e) {
     console.error("Erro ao carregar:", e);
   }
 }
 
-// =========================
-// INICIALIZAÇÃO
-// =========================
-async function iniciar(){
 
-  if(!preview){
+// =========================
+// INIT
+// =========================
+async function iniciar() {
+
+  if (!preview) {
     await registrar();
-    await carregar();
-    polling = setInterval(carregar, 2000);
-  }else{
-    await carregar();
+  }
+
+  await carregar();
+
+  if (!polling) {
     polling = setInterval(carregar, 5000);
   }
 }

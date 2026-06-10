@@ -24,6 +24,13 @@
   placeholder="Digite a mensagem..."
 ></textarea>
 
+<input
+  id="aviso-link"
+  type="text"render
+  placeholder="(Opcional) Cole aqui o link do Canva ou URL para exibir como imagem/apresentação"
+  style="width:100%;margin-top:8px;padding:8px;"
+>
+
 <button
   class="btn-playlist"
   onclick="adicionarAvisoPersonalizado()"
@@ -136,12 +143,19 @@ async function carregarAvisos(){
       if(Array.isArray(items)){
         items.forEach(item => {
           if(!avisoJaExiste(item)){
-            avisos.push({
-              titulo: item.titulo || "Aviso Personalizado",
-              texto: item.texto || "",
-              tipo: item.tipo || "personalizado",
+            // preserve all fields from stored item
+            let novo = Object.assign({
+              titulo: "Aviso Personalizado",
+              texto: "",
+              tipo: "personalizado",
               selecionado: false
-            });
+            }, item);
+
+            if(item.url) novo.url = item.url;
+            if(item.embed) novo.embed = item.embed;
+            if(item.embedRaw) novo.embedRaw = item.embedRaw;
+
+            avisos.push(novo);
           }
         });
       }
@@ -189,28 +203,50 @@ function renderizarAvisos(){
   // =========================
 
   let personalizados =
-    avisos.filter(a=>a.tipo==="personalizado");
+    avisos.filter(a=>a.tipo!=="pronto");
 
   if(personalizados.length > 0){
 
     personalizados.forEach((aviso,index)=>{
 
-      let realIndex =
-        avisos.indexOf(aviso);
+      let realIndex = avisos.indexOf(aviso);
+
+      // detecta se é um link
+      let isLink = aviso.embed || aviso.url || (typeof aviso.texto === 'string' && aviso.texto.startsWith('http'));
+
+      // prefer embedRaw, depois embed/url/texto
+      let previewEmbed = aviso.embedRaw || aviso.embed || aviso.url || aviso.texto;
+
+      // normaliza embed do canva
+      if(isLink && typeof previewEmbed === 'string' && previewEmbed.includes('canva.com') && !/embed/.test(previewEmbed)){
+        if(previewEmbed.includes('?')) previewEmbed = previewEmbed + '&embed';
+        else previewEmbed = previewEmbed + '?embed';
+        aviso.embed = previewEmbed;
+        aviso.url = aviso.url || aviso.texto;
+      }
 
       container.innerHTML += `
-
         <div
-          class="
-            card-aviso
-            card-personalizado
-            ${aviso.selecionado ? "selecionado" : ""}
-          "
+          class="card-aviso card-personalizado ${aviso.selecionado ? "selecionado" : ""}"
           onclick="toggleAviso(${realIndex})"
         >
           <h3>${aviso.titulo}</h3>
-          <p>${aviso.texto}</p>
-
+          ${isLink
+            ? (aviso.embedRaw
+                ? `<div class="link-preview">${aviso.embedRaw}</div><p><a href="${aviso.url || aviso.texto}" target="_blank">Abrir link</a></p>`
+                : `<div class="link-preview">
+                  <iframe 
+                  src="${previewEmbed}"
+                  frameborder="0"
+                  style="width:100%; 
+                  height:100%; 
+                  border:none; 
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation allow-fullscreen allow-autoplay allow-clipboard-read allow-clipboard-write"
+                  ></iframe>
+                    </div>
+                    <p><a href="${aviso.url || aviso.texto}" target="_blank">Abrir link</a></p>`)
+            : `<p>${aviso.texto}</p>`
+          }
         </div>
       `;
     });
@@ -233,21 +269,54 @@ function toggleAviso(index){
 
 function adicionarAvisoPersonalizado(){
 
-  let texto = document.getElementById("aviso-texto").value;
+  let texto = document.getElementById("aviso-texto").value.trim();
+  let link = document.getElementById("aviso-link").value.trim();
 
-  if(!texto){
-    alert("Digite um aviso");
+  if(!texto && !link){
+    alert("Digite um aviso ou cole um link");
     return;
   }
 
-  avisos.push({
-    titulo:"Aviso Personalizado",
-    texto:texto,
-    tipo:"personalizado",
-    selecionado:true
-  });
+  if(link){
+    // se o usuário colou um iframe HTML completo, armazena embedRaw
+    if(link.trim().startsWith('<iframe')){
+      avisos.push({
+        titulo: texto || "Aviso (embed)",
+        texto: link,
+        embedRaw: link,
+        url: null,
+        tipo: "canva",
+        selecionado: true
+      });
+    } else {
+      // prepare embed/url for known providers (Canva)
+      let embed = link;
+      try{
+        if(link.includes('canva.com') && !/embed/.test(link)){
+          embed = link + (link.includes('?') ? '&embed' : '?embed');
+        }
+      }catch(e){ console.warn('Erro ao montar embed:', e); }
+
+      avisos.push({
+        titulo: texto || "Aviso (link)",
+        texto: link,
+        url: link,
+        embed: embed,
+        tipo: "canva",
+        selecionado: true
+      });
+    }
+  } else {
+    avisos.push({
+      titulo: "Aviso Personalizado",
+      texto: texto,
+      tipo: "personalizado",
+      selecionado: true
+    });
+  }
 
   document.getElementById("aviso-texto").value = "";
+  document.getElementById("aviso-link").value = "";
 
   renderizarAvisos();
 }
@@ -341,7 +410,7 @@ async function aplicarTodas(){
 
 async function salvarPlaylist(){
 
-  let personalizados = avisos.filter(a => a.tipo === "personalizado");
+  let personalizados = avisos.filter(a => a.tipo !== "pronto");
 
   if(personalizados.length === 0){
     alert("Não há avisos personalizados para salvar");

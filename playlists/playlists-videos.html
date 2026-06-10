@@ -41,7 +41,6 @@ function voltarMenu() {
   window.location.href = "/controller.html";
 }
 
-
 //========================
 // TV ATUAL
 //========================
@@ -51,13 +50,11 @@ const tv = params.get("tv");
 document.getElementById("info-tv").innerText =
 "Configurando vídeos da " + tv;
 
-
 //========================
 // VARIÁVEIS
 //========================
 let videosDisponiveis = [];
 let playlist = [];
-
 
 //========================
 // EXTRAIR ID
@@ -75,7 +72,11 @@ function extrairVideoId(url) {
     }
 
     if (parsedUrl.pathname.includes("/embed/")) {
-      return parsedUrl.pathname.split("/embed/")[1];
+      return parsedUrl.pathname.split("/embed/")[1]?.split("?")[0];
+    }
+
+    if (parsedUrl.pathname.includes("/live/")) {
+      return parsedUrl.pathname.split("/live/")[1]?.split("?")[0];
     }
 
   } catch {
@@ -85,15 +86,41 @@ function extrairVideoId(url) {
   return null;
 }
 
+//========================
+// DETECTAR LIVESTREAM
+//========================
+function ehLivestream(url) {
+  if (!url) return false;
+  
+  try {
+    let parsedUrl = new URL(url);
+    // YouTube live: /live/ ou /watch?v=xxxxx (precisa ser validado por API)
+    return parsedUrl.pathname.includes("/live/") || 
+           url.includes("youtube.com/live/");
+  } catch {
+    return false;
+  }
+}
+
 function extrairIdDoIframe(iframe) {
   try {
     let url = new URL(iframe);
-    return url.pathname.split("/embed/")[1]?.split("?")[0];
+    
+    // Para embed: /embed/ID?...
+    if (url.pathname.includes("/embed/")) {
+      return url.pathname.split("/embed/")[1]?.split("?")[0];
+    }
+    
+    // Para watch (livestream): /watch?v=ID
+    if (url.pathname.includes("/watch")) {
+      return url.searchParams.get("v");
+    }
+    
+    return null;
   } catch {
     return null;
   }
 }
-
 
 //========================
 // CARREGAR VÍDEOS
@@ -106,34 +133,6 @@ async function carregarVideos(){
     titulo: "Institucional do IFSC - REDE",
     iframe: "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
     thumb: "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
-    duracao: 60
-  },
-  {
-    id: "tD2tECmRbTQ",
-    titulo: "Curso Sistemas para Internet",
-    iframe: "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1",
-    thumb: "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
-    duracao: 60
-  },
-  {
-    id: "ZjC2rCLbIVc",
-    titulo: "Institucional do IFSC - Garopaba",
-    iframe: "https://www.youtube.com/embed/ZjC2rCLbIVc?autoplay=1&mute=1",
-    thumb: "https://img.youtube.com/vi/ZjC2rCLbIVc/hqdefault.jpg",
-    duracao: 60
-  },
-  {
-    id: "wbLtKq_WKRs",
-    titulo: "SEPEI 2026 - Caçador",
-    iframe: "https://www.youtube.com/embed/wbLtKq_WKRs?autoplay=1&mute=1",
-    thumb: "https://img.youtube.com/vi/wbLtKq_WKRs/hqdefault.jpg",
-    duracao: 60
-  },
-  {
-    id: "4m7xcDovykU",
-    titulo: "Curso Técnico em Informática",
-    iframe: "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1",
-    thumb: "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
     duracao: 60
   }
 ];
@@ -156,7 +155,6 @@ async function carregarVideos(){
   renderVideos();
 }
 
-
 //========================
 // RENDER
 //========================
@@ -173,7 +171,7 @@ function renderVideos(){
     card.className = "video-card";
 
     let jaSelecionado = playlist.find(v =>
-    (v.id || extrairIdDoIframe(v.iframe)) === videoId
+      (v.id || extrairIdDoIframe(v.iframe)) === videoId
     );
 
     if(jaSelecionado){
@@ -181,6 +179,7 @@ function renderVideos(){
     }
 
     card.innerHTML = `
+      ${video.live ? '<div class="live-badge">AO VIVO</div>' : ''}
       <img src="${video.thumb}" class="video-thumb">
       <div class="video-info">
         <h3>${video.titulo}</h3>
@@ -195,7 +194,7 @@ function renderVideos(){
     btn.onclick = () => {
 
       let existe = playlist.find(v =>
-      (v.id || extrairIdDoIframe(v.iframe)) === videoId
+        (v.id || extrairIdDoIframe(v.iframe)) === videoId
       );
 
       if(existe){
@@ -216,7 +215,6 @@ function renderVideos(){
   });
 }
 
-
 //========================
 // ADICIONAR VÍDEO
 //========================
@@ -231,7 +229,7 @@ async function adicionarVideo(){
   }
 
   if (!titulo) {
-    alert("Digite um título para o vídeo");
+    alert("Digite um título");
     return;
   }
 
@@ -251,12 +249,21 @@ async function adicionarVideo(){
     return;
   }
 
+  // Detectar livestream
+  const isLive = ehLivestream(url);
+
+  // Livestreams e vídeos normais usam /embed/ (funciona para ambos)
+  let iframe = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1`;
+
+  let thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
   const novoVideo = {
-    titulo: titulo, // 🔥 AQUI É O PONTO PRINCIPAL
-    iframe: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`,
-    thumb: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+    id: videoId,
+    titulo,
+    iframe,
+    thumb,
     duracao: 60
-  };
+};
 
   const res = await fetch("/videos", {
     method: "POST",
@@ -276,7 +283,6 @@ async function adicionarVideo(){
 
   carregarVideos();
 }
-
 
 //========================
 // SALVAR PLAYLIST
@@ -316,7 +322,6 @@ async function salvarPlaylist(){
   window.location.href = "/controller.html";
 }
 
-
 //========================
 // APLICAR EM TODAS
 //========================
@@ -343,12 +348,10 @@ async function aplicarTodas(){
   alert("Vídeos aplicados em todas as TVs");
 }
 
-
 //========================
-// INICIAR
+// INIT
 //========================
 carregarVideos();
-
 
 </script>
 
