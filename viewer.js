@@ -4,9 +4,7 @@
 let params = new URLSearchParams(window.location.search);
 let preview = params.get("preview") === "true";
 
-let tvId = preview
-  ? params.get("tv")
-  : localStorage.getItem("tvId");
+let tvId = preview ? params.get("tv") : localStorage.getItem("tvId");
 
 let ultimaPagina = null;
 let modoAtual = "iframe";
@@ -20,14 +18,15 @@ let polling = null;
 
 let playlistIndex = 0;
 let playlistTimer = null;
+let ultimaPlaylistHash = "";
+let playlistAtual = [];
+
 
 // DOM
 const frame = document.getElementById("frame");
 const content = document.getElementById("content");
 
-// =========================
 // NORMALIZAR YOUTUBE
-// =========================
 function normalizarYoutube(src) {
   try {
     let url = new URL(src);
@@ -59,195 +58,130 @@ function normalizarYoutube(src) {
   }
 }
 
-// =========================
 // TEMPO
-// =========================
-function getTempo(tipo, item) {
-
-  if (tipo === "videos") {
-    return (item.duracao || 60) * 1000;
-  }
-
-
-  if (tipo === "mapa") return 10000;
-  if (tipo === "avisos") {
-
-  if (
-    item.embed ||
-    item.tipo === "canva"
-  ) {
-    return 999999999;
-  }
-
-  return 5000;
+function getTempoItem(item){
+  return (
+    item.duracao ||
+    item.intervalo ||
+    10
+  ) * 1000;
 }
 
-  return 5000;
-}
-
-
-// =========================
 // RENDER
-// =========================
-async function render(tipo, item) {
+async function render(item){
 
-  // ================= VIDEO =================
-if (tipo === "videos") {
-
+  // Vídeo 
+  if(item.iframe){
     frame.style.display = "block";
     content.style.display = "none";
+    const src = normalizarYoutube(item.iframe);
 
-    let src = item.iframe;
-
-    src = normalizarYoutube(src);
-
-    if (frame.src !== src) {
-        frame.src = src;
+    if(frame.src !== src){
+      frame.src = src;
     }
-
     return;
-}
+  }
 
-  // ================= OUTROS =================
   frame.style.display = "none";
   content.style.display = "block";
 
-  if (tipo === "avisos") {
+  switch(item.tipo){
 
-  // =========================
-  // AVISO CANVA / LINK
-  // =========================
+    case "texto":
+      content.innerHTML = `
+        <div class="aviso">
+          <fieldset class="field-texto">
+            <legend>
+              <img src="/layouts/logo-ifsc.png" class="warning-image">
+            </legend>
+            ${item.conteudo}
+          </fieldset>
+        </div> `;
+      break;
 
-  if (item.embed || item.tipo === "canva") {
+    case "canva":
+      content.innerHTML = `
+        <iframe src="${item.conteudo}" style="width:100vw;height:100vh;border:none;" allowfullscreen allow="autoplay; fullscreen"> </iframe>`;
+      break;
 
-    let src =
-      item.embed ||
-      item.url ||
-      item.texto;
+    case "link":
+      content.innerHTML = `
+        <iframe src="${item.conteudo}" style="width:100vw;height:100vh;border:none;"></iframe>`;
+      break;
 
+    case "pdf":
     content.innerHTML = `
-      <div
-        style="
+      <iframe src="${item.conteudo}" style="width:100vw;height:100vh;border:none;"></iframe>`;
+    break;
+
+    case "imagem":
+    content.innerHTML = `
+      <img src="${item.conteudo}" style="width:100vw;height:100vh;object-fit:contain;">`;
+    break;
+    
+    case "mapa":
+      content.innerHTML = `<img src="${item.src}" class="imagemViewer">`;
+      break;
+
+    case "calendario":
+      content.innerHTML = `
+        <iframe src="${item.src}" style="width:100vw;height:100vh;border:none;"></iframe>`;
+      break;
+
+    default:
+      content.innerHTML = `
+        <div style="
           width:100vw;
           height:100vh;
           display:flex;
           justify-content:center;
           align-items:center;
-          background:#000;
-        "
-      >
-        <iframe
-          src="${src}"
-          style="
-            width:100vw;
-            height:100vh;
-            border:none;
-          "
-          allowfullscreen
-          allow="
-            autoplay;
-            fullscreen;
-            clipboard-read;
-            clipboard-write
-          "
-        ></iframe>
-      </div>
-    `;
-
-    return;
-  }
-
-  // =========================
-  // AVISO TEXTO
-  // =========================
-
-  content.innerHTML = `
-    <div class="aviso">
-      <fieldset class="field-texto">
-        <legend>
-          <img src="/layouts/logo-ifsc.png" class="warning-image">
-        </legend>
-        ${item.texto}
-      </fieldset>
-    </div>
-  `;
-
-  return;
-}
-  if (tipo === "mapa") {
-    content.innerHTML = `
-      <img src="${item.src}" class="imagemViewer">
-    `;
-    return;
-  }
-
-  if (tipo === "calendario") {
-    content.innerHTML = `
-      <iframe src="${item.src}"
-        style="width:80vw;height:100vh;margin-left:10vw;">
-      </iframe>
-    `;
-    return;
+          font-size:40px; ">
+          Conteúdo não suportado
+        </div>`;
   }
 }
-
 
 // =========================
 // PLAYLIST
 // =========================
-async function rodarPlaylist(tipo, items) {
+async function rodarPlaylistTV(items){
 
-  if (!items || items.length === 0) return;
+  if(!items || items.length === 0){
+    return;
+  }
 
-  let item = items[playlistIndex];
-
-  await render(tipo, item);
-
-  let tempo = getTempo(tipo, item);
+  const item = items[playlistIndex];
+  await render(item);
+  const tempo = getTempoItem(item);
 
   playlistIndex = (playlistIndex + 1) % items.length;
 
-  if (playlistTimer) clearTimeout(playlistTimer);
-
-  if ( !(true) && !(tipo === "avisos" && (item.embed || item.tipo === "canva"))) {
-  playlistTimer = setTimeout(() => {
-    rodarPlaylist(tipo);
+  clearTimeout(playlistTimer);
+  playlistTimer = setTimeout(()=>{
+    rodarPlaylistTV(items);
   }, tempo);
 }
-}
 
+async function mostrarPlaylistTV(){
 
-// =========================
-// MODO PADRÃO
-// =========================
-async function rodarModoPadrao() {
+  try{
+    const res = await fetch(`/playlist-tv/${tvId}`);
+    const items = await res.json();
 
-  let res = await fetch(`/playlist?tv=${tvId}&type=padrao`);
-  let items = await res.json();
+    if(!items.length){
+      return;
+    }
 
-  if (!items || items.length === 0) return;
-
-  let item = items[playlistIndex];
-
-  await render(item.tipo, item);
-
-  let tempo = getTempo(item.tipo, item);
-
-  playlistIndex = (playlistIndex + 1) % items.length;
-
-  if (playlistTimer) clearTimeout(playlistTimer);
-
-  if (!(item.tipo === "videos" && item.live)) {
-    playlistTimer = setTimeout(() => {
-      rodarModoPadrao();
-    }, tempo);
+    playlistIndex = 0;
+    clearTimeout(playlistTimer);
+    await rodarPlaylistTV(items);
+  }catch(err){
+    console.error(err);
   }
 }
 
-
-// =========================
 // REGISTRO
-// =========================
 async function registrar() {
   if (preview) return;
 
@@ -271,6 +205,7 @@ async function registrar() {
   }
 }
 
+//PING
 async function ping() {
   if (preview) return;
 
@@ -285,7 +220,7 @@ async function ping() {
     console.error("Erro ping:", e);
   }
 }
-
+// HEARTBEAT
 function iniciarHeartbeat() {
   if (preview) return;
 
@@ -293,10 +228,7 @@ function iniciarHeartbeat() {
   heartbeatInterval = setInterval(ping, 30000);
 }
 
-
-// =========================
 // UNREGISTER
-// =========================
 function desligar() {
   if (preview) return;
 
@@ -309,52 +241,57 @@ function desligar() {
 
 window.addEventListener("beforeunload", desligar);
 
+//RODAR PLAYLIST
+async function tocarPlaylist() {
 
-// =========================
-// CONTEÚDO
-// =========================
-async function mostrarConteudo(type, refreshAtual) {
+  if (playlistAtual.length === 0) {
 
-  if (carregandoConteudo) return;
-  carregandoConteudo = true;
+    content.innerHTML = `
+      <div class="sem-conteudo">
+        Nenhum conteúdo na playlist
+      </div>
+    `;
+    return;
+  }
+
+  const item = playlistAtual[playlistIndex];
+  await render(item);
+  const duracao = (item.duracao || item.intervalo || 10) * 1000;
+
+  playlistTimer = setTimeout(() => {
+
+    playlistIndex++;
+
+    if (playlistIndex >= playlistAtual.length) {
+      playlistIndex = 0;
+    }
+    tocarPlaylist();
+
+  }, duracao);
+}
+
+// LOOP PRINCIPAL
+async function carregar() {
 
   try {
 
-    let res = await fetch(`/playlist?tv=${tvId}&type=${type}`);
-    let items = await res.json();
+    const res = await fetch(`/playlist-tv/${tvId}`);
+    const playlist = await res.json();
 
-    if (!items || items.length === 0) return;
-
-    // Normalizar itens para comparar apenas campos relevantes e evitar flicker
-    let simplified;
-    if (type === "avisos") {
-      simplified = items.map(i => ({
-        embedRaw: i.embedRaw || null,
-        embed: i.embed || null,
-        url: i.url || null,
-        texto: typeof i.texto === 'string' ? i.texto : JSON.stringify(i.texto)
-      }));
-    } else if (type === "videos") {
-      simplified = items.map(i => ({
-        id: i.id || null,
-        iframe: i.iframe || null,
-        live: !!i.live,
-        duracao: i.duracao || null
-      }));
-    } else {
-      simplified = items;
-    }
-
-    let conteudoAtual = JSON.stringify(simplified);
-
-    // Só re-renderiza quando o conteúdo relevante mudar
-    if (ultimoConteudo === conteudoAtual) {
+    if (!Array.isArray(playlist)) {
       return;
     }
 
-    ultimoConteudo = conteudoAtual;
-    ultimoRefresh = refreshAtual;
+    // playlist mudou?
+    const hashAtual = JSON.stringify(playlist);
 
+    if (hashAtual === ultimaPlaylistHash) {
+      return;
+    }
+
+    ultimaPlaylistHash = hashAtual;
+
+    playlistAtual = playlist;
     playlistIndex = 0;
 
     if (playlistTimer) {
@@ -362,108 +299,19 @@ async function mostrarConteudo(type, refreshAtual) {
       playlistTimer = null;
     }
 
-      await rodarPlaylist(type, items);
+    tocarPlaylist();
 
-  } catch (e) {
-    console.error("Erro mostrarConteudo:", e);
-  } finally {
-    carregandoConteudo = false;
+  } catch(err) {
+
+    console.error(
+      "Erro ao carregar playlist:",
+      err
+    );
+
   }
 }
 
-
-// =========================
-// LOOP PRINCIPAL
-// =========================
-async function carregar() {
-
-  try {
-    let res = await fetch("/state");
-    let state = await res.json();
-
-    if (!tvId || !state[tvId]) {
-      if (!preview) {
-        localStorage.removeItem("tvId");
-        await registrar();
-      }
-      return;
-    }
-
-    let config = state[tvId];
-
-    let pagina =
-      typeof config === "string"
-        ? config
-        : config.pagina;
-
-    // ================= MODOS =================
-
-    if (pagina?.includes("padrao")) {
-
-      if (modoAtual !== "padrao") {
-        playlistIndex = 0;
-
-        if (playlistTimer) {
-          clearTimeout(playlistTimer);
-          playlistTimer = null;
-        }
-
-        rodarModoPadrao();
-      }
-
-      modoAtual = "padrao";
-      return;
-    }
-
-    if (pagina?.includes("videos")) {
-      modoAtual = "videos";
-      mostrarConteudo("videos", config.refresh);
-      return;
-    }
-
-    if (pagina?.includes("avisos")) {
-      modoAtual = "avisos";
-      mostrarConteudo("avisos", config.refresh);
-      return;
-    }
-
-    if (pagina?.includes("mapa")) {
-      modoAtual = "mapa";
-      mostrarConteudo("mapa", config.refresh);
-      return;
-    }
-
-    if (pagina?.includes("calendario")) {
-      modoAtual = "calendario";
-      mostrarConteudo("calendario", config.refresh);
-      return;
-    }
-
-    // ================= FALLBACK =================
-    modoAtual = "iframe";
-
-    if (playlistTimer) {
-      clearTimeout(playlistTimer);
-      playlistTimer = null;
-    }
-
-    frame.style.display = "block";
-    content.style.display = "none";
-
-    if (ultimaPagina !== pagina) {
-      frame.src = pagina;
-      ultimaPagina = pagina;
-    }
-
-  } catch (e) {
-    console.error("Erro ao carregar:", e);
-  }
-}
-
-
-// =========================
 // INIT
-// =========================
 async function iniciar() {
 
   if (!preview) {

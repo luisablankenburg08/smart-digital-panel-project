@@ -9,101 +9,58 @@
 </head>
 
 <body>
-    <button class="btn-voltar" onclick="voltarMenu()">Voltar</button>
-    <h2 class="titulosplaylists">Ensalamento 2026</h2>
+ <button id="aplicar">
+Aplicar Ensalamento
+</button>
 
-<div id="preview"></div>
+<button id="atualizar">
+Atualizar do EduPage
+</button>
 
-<div>
-    <button class="btn-playlist" onclick="aplicarEnsalamento()">Aplicar e Salvar</button>
-    <button class="btn-playlist destaque" onclick="aplicarTodas()">Aplicar em todas as telas </button>
-
-    
-</div>
 <script>
-    
-function voltarMenu() {
-  window.location.href = "/controller.html"; }
 
-  
-async function aplicarEnsalamento(){
+const tv =
+  new URLSearchParams(location.search)
+  .get("tv");
 
-  const tv = localStorage.getItem("tvSelecionada");
+document
+.getElementById("aplicar")
+.onclick = async () => {
 
   await fetch("/update", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type":"application/json"
     },
     body: JSON.stringify({
-      tv: tv,
-      pagina: "api/ensalamento",
-      intervalo: 60000 
+      tv,
+      pagina:"ensalamento"
     })
   });
 
-  alert("Ensalamento aplicado!");
-}
+  
+  alert("Aplicado");
+};
 
+document
+.getElementById("atualizar")
+.onclick = async () => {
 
-// aplicar em todas as TVs
-async function aplicarTodas(){
-
-  await fetch("/update-all", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      pagina: "ensalamento",
-      intervalo: 60000
-    })
-  });
-
-  alert("Ensalamento aplicado em todas!");
-}
-
-function montarGrade(data){
-
-  const grid = [];
-
-  data.linhas.forEach((linha, i) => {
-
-    if(!grid[i]) grid[i] = [];
-
-    let col = 0;
-
-    linha.forEach(cell => {
-
-      while(grid[i][col]) col++;
-
-      for(let r = 0; r < cell.rowspan; r++){
-        for(let c = 0; c < cell.colspan; c++){
-
-          if(!grid[i + r]) grid[i + r] = [];
-
-          grid[i + r][col + c] = cell.texto;
-        }
+  const res =
+    await fetch(
+      "/atualizar-ensalamento",
+      {
+        method: "POST"
       }
-      col++;
-    });
+    );
 
-  });
+  const dados =
+    await res.json();
 
-  return grid;
-}
-
-async function carregarPreview(){
-
-  const container = document.getElementById("preview");
-
-  const res = await fetch("/api/ensalamento");
-  const html = await res.text();
-
-  container.innerHTML = html;
-}
-
-carregarPreview();
+  alert(
+    "Atualizado!"
+  );
+};
 
 </script>
 </body>

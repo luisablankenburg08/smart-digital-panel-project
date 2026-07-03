@@ -25,6 +25,7 @@
 
     <div id="videos"></div>
     <div id="avisos"></div>
+    <div id="mapa"></div>
 
   </div>
 
@@ -72,7 +73,7 @@ function removerDuplicados(lista, chave){
   const seen = new Set();
 
   return lista.filter(item => {
-    const valor = item[chave];
+    const valor = item?.[chave] || item?.id || item?.iframe || item?.url || item?.texto || item?.src || JSON.stringify(item);
     if(seen.has(valor)) return false;
     seen.add(valor);
     return true;

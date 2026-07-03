@@ -59,26 +59,43 @@ body{
 }
 
 /* EXIBIÇÃO DO ENSALAMENTO */
-.tabela {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
+.ensalamento {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    background: white;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-.linha {
-  display: grid;
-  grid-template-columns: repeat(20, 1fr); /* ajuste conforme */
+.ensalamento h1 {
+    text-align: center;
+    margin-bottom: 10px;
 }
 
-.cell {
-  border: 1px solid #333;
-  padding: 5px;
-  font-size: 1vw;
-  text-align: center;
+.ultima-atualizacao {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 18px;
 }
 
-.header {
-  background: #111;
-  font-weight: bold;
+.sala {
+    margin-bottom: 40px;
+}
+
+.sala table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sala th,
+.sala td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+
+.sala th {
+    background: #004a8f;
+    color: white;
 }
