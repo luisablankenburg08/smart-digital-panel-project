@@ -1,141 +1,206 @@
 {
-  "tv1": {
-    "avisos": [
-      {
-        "titulo": "Mensagem Padrão",
-        "texto": "Smart Digital Panel Project",
-        "tipo": "pronto",
-        "selecionado": true
-      }
-    ],
-    "videos": [
-      {
-        "titulo": "Institucional do IFSC - REDE",
-        "iframe": "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
-        "duracao": 60
-      }
-    ]
+  "tvPlaylists": {
+    "tv1": {
+      "items": [
+        {
+          "id": "1783082579283",
+          "titulo": "Solicitação de Conteúdo",
+          "tipo": "canva",
+          "conteudo": "https://www.canva.com/design/DAHNksivLzQ/3m4rkzegCaN0XZ8VY3jWHA/view?embed",
+          "duracao": 30
+        },
+        {
+          "id": "1783082676361",
+          "titulo": "Clube do Livro",
+          "tipo": "canva",
+          "conteudo": "https://www.canva.com/design/DAHMWi1508o/NlufFTqveAMt7RS6twSeEw/view?embed",
+          "duracao": 30
+        },
+        {
+          "id": "1783082708138",
+          "titulo": "Joaquim - Salgados",
+          "tipo": "canva",
+          "conteudo": "https://www.canva.com/design/DAHNUCP97Jc/GZuT1yrGRpFDaUpqxlMPMQ/view?embed",
+          "duracao": 30
+        },
+        {
+          "id": "1783082743473",
+          "titulo": "Joaquim - Combo",
+          "tipo": "canva",
+          "conteudo": "https://www.canva.com/design/DAHNZqkWpqE/26pc9VLaYE1RypeDBqwTFg/view?embed",
+          "duracao": 30
+        },
+        {
+          "tipo": "video",
+          "id": "tD2tECmRbTQ",
+          "titulo": "Curso superior em Sistemas para Internet",
+          "iframe": "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1&playsinline=1",
+          "thumb": "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
+          "duracao": 320,
+          "live": false
+        },
+        {
+          "tipo": "video",
+          "id": "ZjC2rCLbIVc",
+          "titulo": "Institucional do Câmpus Garopaba do IFSC",
+          "iframe": "https://www.youtube.com/embed/ZjC2rCLbIVc?autoplay=1&mute=1&playsinline=1",
+          "thumb": "https://img.youtube.com/vi/ZjC2rCLbIVc/hqdefault.jpg",
+          "duracao": 425,
+          "live": false
+        },
+        {
+          "tipo": "video",
+          "id": "4m7xcDovykU",
+          "titulo": "Curso Técnico em Informática Garopaba",
+          "iframe": "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1&playsinline=1",
+          "thumb": "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
+          "duracao": 202,
+          "live": false
+        }
+      ]
+    },
+    "tv2": {
+      "items": [
+        {
+          "tipo": "video",
+          "id": "TjxfN_tIv6o",
+          "titulo": "MCC INFO25: Apresentações",
+          "iframe": "https://www.youtube.com/embed/TjxfN_tIv6o?autoplay=1&mute=1&playsinline=1",
+          "thumb": "https://img.youtube.com/vi/TjxfN_tIv6o/hqdefault.jpg",
+          "duracao": 67,
+          "live": false
+        }
+      ]
+    }
   },
-  "tv2": {
-    "avisos": [
-      {
-        "titulo": "Mensagem Padrão",
-        "texto": "Smart Digital Panel Project",
-        "tipo": "avisos",
-        "selecionado": true
-      }
-    ],
-    "mapa": [
-      {
-        "src": "/playlists/mapa-floripa.jpg",
-        "duracao": 60
-      }
-    ],
-    "videos": [
-      {
-        "titulo": "Institucional do IFSC - REDE",
-        "iframe": "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
-        "duracao": 60
-      },
-      {
-        "titulo": "Curso Sistemas para Internet",
-        "iframe": "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
-        "duracao": 325,
-        "tipo": "videos"
-      },
-      {
-        "titulo": " Institucional do IFSC - Garopaba",
-        "iframe": "https://www.youtube.com/embed/ZjC2rCLbIVc?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/ZjC2rCLbIVc/hqdefault.jpg",
-        "duracao": 60
-      },
-      {
-        "titulo": "SEPEI 2026 - Caçador",
-        "iframe": "https://www.youtube.com/embed/wbLtKq_WKRs?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/wbLtKq_WKRs/hqdefault.jpg",
-        "duracao": 45
-      },
-      {
-        "titulo": "Curso Técnico em Informática",
-        "iframe": "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
-        "duracao": 60
-      }
-    ],
-    "padrao": [
-      {
-        "titulo": "Institucional do IFSC - REDE",
-        "iframe": "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
-        "duracao": 60,
-        "tipo": "videos"
-      },
-      {
-        "titulo": "Curso Sistemas para Internet",
-        "iframe": "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
-        "duracao": 325,
-        "tipo": "videos"
-      },
-      {
-        "titulo": "SEPEI 2026 - Caçador",
-        "iframe": "https://www.youtube.com/embed/wbLtKq_WKRs?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/wbLtKq_WKRs/hqdefault.jpg",
-        "duracao": 45,
-        "tipo": "videos"
-      },
-      {
-        "titulo": "Curso Técnico em Informática",
-        "iframe": "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
-        "duracao": 60,
-        "tipo": "videos"
-      },
-      {
-        "titulo": "Mensagem Padrão",
-        "texto": "Smart Digital Panel Project",
-        "tipo": "avisos",
-        "selecionado": true
-      }
-    ]
-  },
-  "tv3": {
-    "avisos": [
-      {
-        "titulo": "Mensagem Padrão",
-        "texto": "Smart Digital Panel Project",
-        "tipo": "pronto",
-        "selecionado": true
-      }
-    ],
-    "videos": [
-      {
-        "titulo": "Curso Técnico em Informática",
-        "iframe": "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
-        "duracao": 205
-      }
-    ]
-  },
-  "tv4": {
-    "avisos": [
-      {
-        "titulo": "Mensagem Padrão",
-        "texto": "Smart Digital Panel Project",
-        "tipo": "pronto",
-        "selecionado": true
-      }
-    ],
-    "videos": [
-      {
-        "titulo": "Curso Sistemas para Internet",
-        "iframe": "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1",
-        "thumb": "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
-        "duracao": 60
-      }
-    ]
-  }
+  "videosCustomizados": [
+    {
+      "id": "TjxfN_tIv6o",
+      "titulo": "MCC INFO25: Apresentações",
+      "iframe": "https://www.youtube.com/embed/TjxfN_tIv6o?autoplay=1&mute=1&playsinline=1",
+      "thumb": "https://img.youtube.com/vi/TjxfN_tIv6o/hqdefault.jpg",
+      "duracao": 67,
+      "tipo": "video",
+      "live": false
+    },
+    {
+      "id": "qCFeUspzav8",
+      "titulo": "TURISMO BASE COMUNITÁRIA GAROPABA",
+      "iframe": "https://www.youtube.com/embed/qCFeUspzav8?autoplay=1&mute=1",
+      "thumb": "https://img.youtube.com/vi/qCFeUspzav8/hqdefault.jpg",
+      "duracao": 490,
+      "tipo": "video",
+      "live": false
+    },
+    {
+      "id": "OXIAp2zgips",
+      "titulo": "MOTIVOS PARA ESTUDAR NO IFSC",
+      "iframe": "https://www.youtube.com/embed/OXIAp2zgips?autoplay=1&mute=1",
+      "thumb": "https://img.youtube.com/vi/OXIAp2zgips/hqdefault.jpg",
+      "duracao": 230,
+      "tipo": "video",
+      "live": false
+    },
+    {
+      "id": "1GiXd3lAjrE",
+      "titulo": "Institucional do IFSC - REDE",
+      "iframe": "https://www.youtube.com/embed/1GiXd3lAjrE?autoplay=1&mute=1",
+      "thumb": "https://img.youtube.com/vi/1GiXd3lAjrE/hqdefault.jpg",
+      "duracao": 60,
+      "tipo": "video",
+      "live": false
+    },
+    {
+      "id": "CJ5KS-WKE6w",
+      "titulo": "JIFSC 2025 - Apresentação",
+      "iframe": "https://www.youtube.com/embed/CJ5KS-WKE6w?autoplay=1&mute=1",
+      "thumb": "https://img.youtube.com/vi/CJ5KS-WKE6w/hqdefault.jpg",
+      "duracao": 140,
+      "tipo": "video",
+      "live": false
+    },
+    {
+      "id": "RaAqmjb6D2Y",
+      "titulo": "SEPEI 2025 - Institucional",
+      "iframe": "https://www.youtube.com/embed/RaAqmjb6D2Y?autoplay=1&mute=1",
+      "thumb": "https://img.youtube.com/vi/RaAqmjb6D2Y/hqdefault.jpg",
+      "duracao": 190
+    },
+    {
+      "id": "LdmEIAy5VdU",
+      "titulo": "JIFSC 2014 - Reportagem",
+      "iframe": "https://www.youtube.com/embed/LdmEIAy5VdU?autoplay=1&mute=1",
+      "thumb": "https://img.youtube.com/vi/LdmEIAy5VdU/hqdefault.jpg",
+      "duracao": 195
+    },
+    {
+      "id": "tD2tECmRbTQ",
+      "titulo": "Curso superior em Sistemas para Internet",
+      "iframe": "https://www.youtube.com/embed/tD2tECmRbTQ?autoplay=1&mute=1&playsinline=1",
+      "thumb": "https://img.youtube.com/vi/tD2tECmRbTQ/hqdefault.jpg",
+      "duracao": 320,
+      "live": false
+    },
+    {
+      "id": "ZjC2rCLbIVc",
+      "titulo": "Institucional do Câmpus Garopaba do IFSC",
+      "iframe": "https://www.youtube.com/embed/ZjC2rCLbIVc?autoplay=1&mute=1&playsinline=1",
+      "thumb": "https://img.youtube.com/vi/ZjC2rCLbIVc/hqdefault.jpg",
+      "duracao": 425,
+      "live": false
+    },
+    {
+      "id": "4m7xcDovykU",
+      "titulo": "Curso Técnico em Informática Garopaba",
+      "iframe": "https://www.youtube.com/embed/4m7xcDovykU?autoplay=1&mute=1&playsinline=1",
+      "thumb": "https://img.youtube.com/vi/4m7xcDovykU/hqdefault.jpg",
+      "duracao": 202,
+      "live": false
+    }
+  ],
+  "mapa": [
+    {
+      "tipo": "mapa",
+      "titulo": "Mapa do Campus",
+      "src": "/playlists/mapa-floripa.jpg",
+      "duracao": 30
+    }
+  ],
+  "avisosCustomizados": [
+    {
+      "id": "1783077286617",
+      "titulo": "Projeto",
+      "tipo": "texto",
+      "conteudo": "Smart Digital Panel Project",
+      "duracao": 15
+    },
+    {
+      "id": "1783082579283",
+      "titulo": "Solicitação de Conteúdo",
+      "tipo": "canva",
+      "conteudo": "https://www.canva.com/design/DAHNksivLzQ/3m4rkzegCaN0XZ8VY3jWHA/view?embed",
+      "duracao": 30
+    },
+    {
+      "id": "1783082676361",
+      "titulo": "Clube do Livro",
+      "tipo": "canva",
+      "conteudo": "https://www.canva.com/design/DAHMWi1508o/NlufFTqveAMt7RS6twSeEw/view?embed",
+      "duracao": 30
+    },
+    {
+      "id": "1783082708138",
+      "titulo": "Joaquim - Salgados",
+      "tipo": "canva",
+      "conteudo": "https://www.canva.com/design/DAHNUCP97Jc/GZuT1yrGRpFDaUpqxlMPMQ/view?embed",
+      "duracao": 30
+    },
+    {
+      "id": "1783082743473",
+      "titulo": "Joaquim - Combo",
+      "tipo": "canva",
+      "conteudo": "https://www.canva.com/design/DAHNZqkWpqE/26pc9VLaYE1RypeDBqwTFg/view?embed",
+      "duracao": 30
+    }
+  ]
 }
