@@ -9,58 +9,13 @@
 </head>
 
 <body>
- <button id="aplicar">
-Aplicar Ensalamento
-</button>
-
-<button id="atualizar">
-Atualizar do EduPage
-</button>
-
+<button class="btn-voltar" onclick="voltar()">Voltar</button>
+<h2 class="titulosplaylists">Ensalamento 2026</h2>
 <script>
-
-const tv =
-  new URLSearchParams(location.search)
-  .get("tv");
-
-document
-.getElementById("aplicar")
-.onclick = async () => {
-
-  await fetch("/update", {
-    method: "POST",
-    headers: {
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify({
-      tv,
-      pagina:"ensalamento"
-    })
-  });
-
   
-  alert("Aplicado");
-};
-
-document
-.getElementById("atualizar")
-.onclick = async () => {
-
-  const res =
-    await fetch(
-      "/atualizar-ensalamento",
-      {
-        method: "POST"
-      }
-    );
-
-  const dados =
-    await res.json();
-
-  alert(
-    "Atualizado!"
-  );
-};
+function voltar() {
+  window.location.href = "/controller.html";
+}
 
 </script>
 </body>

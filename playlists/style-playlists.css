@@ -242,12 +242,6 @@ body {
   position: relative;
 }
 
-#mapa-campus {
-  width: 68vw;
-  height: 90vh;
-  margin-left: 16vw;
-}
-
 .salvar-btn {
   display:block;
   width: 15vw;
@@ -338,4 +332,28 @@ body {
   gap:15px;
   flex-wrap:wrap;
   margin-top:20px;
+}
+
+.card-mapa{
+  width: 700px;
+  max-width: 95%;
+  margin: 30px auto;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card-mapa img{
+  width: 100%;
+  border-radius: 1vw;
+  border: 1px solid #ddd;
+}
+
+.acoes-card-mapa{
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
 }
